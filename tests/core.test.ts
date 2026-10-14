@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { moonPhaseTime, moonEvents, sunTimes } from '../src/core/astro';
+import { sunTimes } from '../src/core/astro';
 import { calendarCounts, dayType } from '../src/core/calendar';
 import { humanDuration, splitDuration } from '../src/core/format';
-import { INTERVALS, currentInterval } from '../src/core/intervals';
-import { MILESTONES } from '../src/core/milestones';
+import { FINE_INTERVALS, briefingAt, nextBriefingAt } from '../src/core/intervals';
+import { DAILY } from '../src/data/briefings';
+import { progressFrom } from '../src/core/startpoint';
+import { milestones } from '../src/core/milestones';
 import { phaseFor } from '../src/core/phases';
 import { DST_CHANGES, PRELOAD, RELEASE } from '../src/core/timeline';
 import { DAY_MS, HOUR_MS, civilDayLength, parseLocal, zonedParts, zonedToUtc } from '../src/core/tz';
@@ -84,21 +86,7 @@ describe('Kalender', () => {
   });
 });
 
-describe('Astronomie', () => {
-  it('Vollmond am 13.01.2025 um ca. 22:27 UTC', () => {
-    const events = moonEvents(Date.UTC(2025, 0, 10), Date.UTC(2025, 0, 16));
-    const full = events.find((e) => e.type === 'full');
-    expect(full).toBeDefined();
-    expect(Math.abs(full!.at - Date.UTC(2025, 0, 13, 22, 27))).toBeLessThan(10 * 60_000);
-  });
-
-  it('Neumond am 29.01.2025 um ca. 12:36 UTC', () => {
-    const k = Math.round((2025.08 - 2000) * 12.3685);
-    const candidates = [k - 1, k, k + 1].map(moonPhaseTime);
-    const best = candidates.reduce((a, b) => (Math.abs(a - Date.UTC(2025, 0, 29, 12, 36)) < Math.abs(b - Date.UTC(2025, 0, 29, 12, 36)) ? a : b));
-    expect(Math.abs(best - Date.UTC(2025, 0, 29, 12, 36))).toBeLessThan(10 * 60_000);
-  });
-
+describe('Sonnenstand', () => {
   it('Sonnenaufgang in Berlin am 21.06.2025 gegen 04:43 MESZ', () => {
     const st = sunTimes({ y: 2025, m: 6, d: 21 }, 52.52, 13.405);
     expect(Math.abs(st.sunrise! - Date.UTC(2025, 5, 21, 2, 43))).toBeLessThan(4 * 60_000);
@@ -117,18 +105,49 @@ describe('Phasen, Meilensteine, Restzeit-Texte', () => {
   });
 
   it('Meilensteine sind sortiert und exakt berechnet', () => {
-    for (let i = 1; i < MILESTONES.length; i++) expect(MILESTONES[i].at).toBeGreaterThanOrEqual(MILESTONES[i - 1].at);
-    expect(MILESTONES.find((m) => m.id === 'd30')?.at).toBe(RELEASE - 30 * DAY_MS);
-    expect(MILESTONES.find((m) => m.id === 's1000000')?.at).toBe(RELEASE - 1_000_000_000);
+    for (let i = 1; i < milestones().length; i++) expect(milestones()[i].at).toBeGreaterThanOrEqual(milestones()[i - 1].at);
+    expect(milestones().find((m) => m.id === 'd30')?.at).toBe(RELEASE - 30 * DAY_MS);
+    expect(milestones().find((m) => m.id === 's1000000')?.at).toBe(RELEASE - 1_000_000_000);
   });
 
-  it('Jede Restzeit fällt in genau ein Intervall', () => {
-    const samples = [800 * DAY_MS, 37.4 * DAY_MS, 29 * DAY_MS, 8 * DAY_MS, 30 * HOUR_MS, 4 * HOUR_MS, 50 * 60_000, 30_000, 5_000, -1000, -5 * HOUR_MS, -3 * DAY_MS, -30 * DAY_MS];
-    for (const d of samples) {
-      const matches = INTERVALS.filter((i) => d >= i.min && d < i.max);
-      expect(matches.length).toBe(1);
-      expect(currentInterval(d)).toBe(matches[0]);
-    }
+  it('Die letzten Minuten und die Zeit danach sind lückenlos abgedeckt', () => {
+    const samples = [44 * 60_000, 30 * 60_000, 10 * 60_000, 3 * 60_000, 30_000, 5_000, -1000, -5 * HOUR_MS, -3 * DAY_MS, -30 * DAY_MS];
+    for (const d of samples) expect(FINE_INTERVALS.filter((i) => d >= i.min && d < i.max).length).toBe(1);
+  });
+});
+
+describe('Tagesbriefings', () => {
+  it('gibt es für jeden der Tage 36 bis 2', () => {
+    for (let d = 2; d <= 36; d++) expect(DAILY[d]).toBeDefined();
+  });
+
+  it('zeigt am 14.10. das erste Briefing', () => {
+    const b = briefingAt(parseLocal('2026-10-14T15:00', TZ));
+    expect(b.key).toBe('day-36');
+    expect(b.tag).toContain('Briefing 1 von 36');
+  });
+
+  it('wechselt am letzten Tag nach Tageszeit', () => {
+    expect(briefingAt(parseLocal('2026-11-18T09:00', TZ)).title).toBe('Der letzte Schultag');
+    expect(briefingAt(parseLocal('2026-11-18T19:30', TZ)).title).toBe('Das letzte Abendessen');
+  });
+
+  it('nutzt in der letzten Dreiviertelstunde Minutentexte', () => {
+    expect(briefingAt(RELEASE - 30 * 60_000).title).toBe('Weniger als eine Schulstunde');
+    expect(briefingAt(RELEASE + 10_000).title).toBe('Es ist da.');
+  });
+
+  it('kündigt das nächste Briefing für Mitternacht an', () => {
+    expect(nextBriefingAt(parseLocal('2026-10-14T15:00', TZ))).toBe(parseLocal('2026-10-15T00:00', TZ));
+  });
+});
+
+describe('Startpunkt', () => {
+  it('berechnet den Fortschritt zwischen Start und Release', () => {
+    const start = RELEASE - 100 * DAY_MS;
+    expect(progressFrom(start, RELEASE - 25 * DAY_MS)).toBeCloseTo(0.75, 10);
+    expect(progressFrom(start, start - 1)).toBe(0);
+    expect(progressFrom(start, RELEASE + 1)).toBe(1);
   });
 });
 

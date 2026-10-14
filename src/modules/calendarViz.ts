@@ -3,7 +3,7 @@
  * Zeitspirale und Stundenbudget.
  */
 import { CONFIG } from '../config';
-import { DAY_TYPE_LABEL, DayType, dayType, holidayOf, isSchoolDay } from '../core/calendar';
+import { DAY_TYPE_LABEL, DayType, dayType, holidayOf } from '../core/calendar';
 import { clock } from '../core/clock';
 import { fmtDate, num, plural } from '../core/format';
 import { onSettings, settings } from '../core/settings';
@@ -24,7 +24,8 @@ import {
   zonedParts,
 } from '../core/tz';
 import { HISTORY } from '../data/history';
-import { fitCanvas, h, s } from '../ui/dom';
+import { hourKind } from '../core/schedule';
+import { h, s } from '../ui/dom';
 import { panel, registerModule } from '../ui/panel';
 import { bindTip, hideTip, showTip } from '../ui/tooltip';
 
@@ -198,7 +199,7 @@ export function waitWeeks(): HTMLElement {
     title: '13 Jahre in Wochen',
     kicker: 'Jedes Kästchen ist eine Woche seit dem Release von GTA V. Eine Zeile entspricht 52 Wochen.',
     tone: 'pink',
-    span: 2,
+    span: 4,
     body: h('div', h('div.weeks__scroll', svg), summary, legend),
   });
 
@@ -221,180 +222,8 @@ export function waitWeeks(): HTMLElement {
 }
 
 /* ------------------------------------------------------------------ */
-/* T-07 Zeitspirale                                                    */
-/* ------------------------------------------------------------------ */
-export function timeSpiral(): HTMLElement {
-  const canvas = h<HTMLCanvasElement>('canvas.spiral', { role: 'img', 'aria-label': 'Zeitspirale: ein Punkt pro Tag' });
-  let mode: 't1' | 'gta5' = 't1';
-  const seg = h(
-    'div.seg.seg--small',
-    { role: 'tablist', 'aria-label': 'Startpunkt der Spirale' },
-    [
-      ['t1', 'Seit Trailer 1'],
-      ['gta5', 'Seit GTA V'],
-    ].map(([k, l]) =>
-      h(
-        'button.seg__btn',
-        {
-          type: 'button',
-          role: 'tab',
-          'aria-selected': String(k === mode),
-          onclick: (e: Event) => {
-            mode = k as typeof mode;
-            seg.querySelectorAll('button').forEach((b) => b.setAttribute('aria-selected', String(b === e.currentTarget)));
-            dots = layout();
-            draw(clock.now());
-          },
-        },
-        l,
-      ),
-    ),
-  );
-  const caption = h('p.spiral__caption');
-
-  interface Dot {
-    t: number;
-    x: number;
-    y: number;
-    special?: string;
-    color?: string;
-  }
-  let dots: Dot[] = [];
-  let size = { w: 0, h: 0 };
-
-  function layout(): Dot[] {
-    const start = mode === 't1' ? ANCHORS.trailer1 : ANCHORS.gta5;
-    const startDay = civilFromMs(start, TZ);
-    const total = civilDiff(startDay, RELEASE_CIVIL);
-    const specials = new Map<string, { label: string; color: string }>();
-    for (const e of HISTORY) {
-      const color = e.kind === 'release' ? '#ffd23f' : e.kind === 'trailer' ? '#19f0ff' : e.kind === 'delay' ? '#ff3b5c' : e.kind === 'announce' ? '#3dffb5' : '';
-      if (color) specials.set(e.date, { label: e.title, color });
-    }
-    const out: Dot[] = [];
-    const r0 = 0.12;
-    for (let i = 0; i <= total; i++) {
-      const c = civilAddDays(startDay, i);
-      const theta = (i / 365.2425) * Math.PI * 2 - Math.PI / 2;
-      const r = r0 + (1 - r0) * (i / Math.max(1, total));
-      const sp = specials.get(civilKey(c));
-      out.push({ t: startOfCivilDay(c, TZ), x: Math.cos(theta) * r, y: Math.sin(theta) * r, special: sp?.label, color: sp?.color });
-    }
-    return out;
-  }
-  dots = layout();
-
-  function draw(now: number) {
-    const { ctx, w, h: hh } = fitCanvas(canvas);
-    size = { w, h: hh };
-    ctx.clearRect(0, 0, w, hh);
-    const R = Math.min(w, hh) / 2 - 10;
-    const cx = w / 2;
-    const cy = hh / 2;
-    const idx = dots.findIndex((d) => d.t > now) - 1;
-    const cur = idx < 0 ? dots.length - 1 : idx;
-    const dense = dots.length > 2000;
-    const rad = dense ? 1.1 : 2;
-    // Verbindungslinie
-    ctx.beginPath();
-    dots.forEach((d, i) => (i === 0 ? ctx.moveTo(cx + d.x * R, cy + d.y * R) : ctx.lineTo(cx + d.x * R, cy + d.y * R)));
-    ctx.strokeStyle = 'rgba(245,236,255,0.08)';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-    dots.forEach((d, i) => {
-      const x = cx + d.x * R;
-      const y = cy + d.y * R;
-      if (i <= cur) {
-        const age = (cur - i) / Math.max(1, cur);
-        ctx.fillStyle = `rgba(255, ${Math.round(46 + 110 * (1 - age))}, ${Math.round(151 - 90 * (1 - age))}, ${0.35 + 0.6 * (1 - age)})`;
-        ctx.beginPath();
-        ctx.arc(x, y, rad, 0, Math.PI * 2);
-        ctx.fill();
-      } else {
-        ctx.strokeStyle = 'rgba(25, 240, 255, 0.75)';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.arc(x, y, rad + 0.6, 0, Math.PI * 2);
-        ctx.stroke();
-      }
-    });
-    for (const d of dots) {
-      if (!d.color) continue;
-      ctx.fillStyle = d.color;
-      ctx.beginPath();
-      ctx.arc(cx + d.x * R, cy + d.y * R, 4.5, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = '#120628';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-    }
-    const c = dots[cur];
-    const pulse = 6 + Math.sin(now / 250) * 2;
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(cx + c.x * R, cy + c.y * R, pulse, 0, Math.PI * 2);
-    ctx.stroke();
-    // Ziel im Zentrum? Nein: Ziel ist das äußere Ende der Spirale
-    const end = dots[dots.length - 1];
-    ctx.fillStyle = '#ffd23f';
-    ctx.font = '600 11px "Chakra Petch", sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('GTA VI', cx + end.x * R, cy + end.y * R - 9);
-    const left = dots.length - 1 - cur;
-    caption.textContent = `${num(cur + 1)} von ${num(dots.length)} Tagen auf der Spirale erreicht – noch ${plural(left, 'Punkt', 'Punkte')} bis zum äußeren Ende. Eine Umdrehung ist ein Jahr.`;
-  }
-
-  canvas.addEventListener('pointermove', (e) => {
-    const r = canvas.getBoundingClientRect();
-    const R = Math.min(size.w, size.h) / 2 - 10;
-    const mx = (e.clientX - r.left - size.w / 2) / R;
-    const my = (e.clientY - r.top - size.h / 2) / R;
-    let best: Dot | null = null;
-    let bd = Infinity;
-    for (const d of dots) {
-      const dd = (d.x - mx) ** 2 + (d.y - my) ** 2;
-      if (dd < bd) {
-        bd = dd;
-        best = d;
-      }
-    }
-    if (!best || Math.sqrt(bd) * R > 14) return hideTip();
-    showTip(e.clientX, e.clientY, fmtDate(best.t + 12 * HOUR_MS, 'full'), best.special ? [best.special] : []);
-  });
-  canvas.addEventListener('pointerleave', hideTip);
-
-  const el = panel({
-    id: 'spirale',
-    code: 'T-07',
-    title: 'Zeitspirale',
-    kicker: 'Ein Punkt pro Tag, von innen nach außen. Gefüllt = gewartet, Umriss = steht noch bevor.',
-    tone: 'cyan',
-    tall: true,
-    actions: seg,
-    body: h('div.spiral-wrap', canvas, caption),
-  });
-  let lastDraw = 0;
-  registerModule({
-    el,
-    frame(now) {
-      if (performance.now() - lastDraw < 50) return;
-      lastDraw = performance.now();
-      draw(now);
-    },
-  });
-  return el;
-}
-
-/* ------------------------------------------------------------------ */
 /* T-08 Stundenbudget                                                  */
 /* ------------------------------------------------------------------ */
-type HourKind = 'sleep' | 'school' | 'free' | 'past';
-
-function hm(v: string): number {
-  const [a, b] = v.split(':').map(Number);
-  return a + b / 60;
-}
 
 export function hourBudget(): HTMLElement {
   const grid = h('div.hours');
@@ -406,15 +235,7 @@ export function hourBudget(): HTMLElement {
     h('li', h('span.legend__swatch', { style: { background: '#ff2e97' } }), 'Freizeit ', totals.free),
   );
 
-  function kindAt(c: CivilDate, hour: number): Exclude<HourKind, 'past'> {
-    const st = settings();
-    const bed = hm(CONFIG.assumptions.bedtime);
-    const wake = (bed + st.sleepHours) % 24;
-    const asleep = bed > wake ? hour >= bed || hour < wake : hour >= bed && hour < wake;
-    if (asleep) return 'sleep';
-    if (isSchoolDay(c) && hour >= Math.floor(hm(CONFIG.school.dayStart)) && hour < Math.ceil(hm(CONFIG.school.dayEnd))) return 'school';
-    return 'free';
-  }
+  const kindAt = hourKind;
 
   let builtKey = '';
   const build = (now: number) => {

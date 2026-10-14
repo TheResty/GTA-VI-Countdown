@@ -88,10 +88,6 @@ export interface CheckinState {
 
 export interface GameState {
   achievements: Record<string, number>; // id → Zeitpunkt der Freischaltung
-  cheats: string[];
-  money: number;
-  wanted: number;
-  wantedAt: number;
   sunClicks: number;
   milestonesSeen: string[];
   celebrationSeen: boolean;
@@ -116,10 +112,6 @@ export const defaults = {
   checkins: (): CheckinState => ({ days: [], best: 0 }),
   game: (): GameState => ({
     achievements: {},
-    cheats: [],
-    money: 0,
-    wanted: 0,
-    wantedAt: 0,
     sunClicks: 0,
     milestonesSeen: [],
     celebrationSeen: false,

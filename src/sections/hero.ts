@@ -5,21 +5,21 @@
  */
 import { CONFIG } from '../config';
 import { emit, on } from '../core/bus';
-import { calendarCounts } from '../core/calendar';
 import { clock } from '../core/clock';
 import { fmtDate, humanDuration, num, pad, splitDuration, tzLabel } from '../core/format';
 import { sunClick } from '../core/game';
-import { currentInterval, intervalContext } from '../core/intervals';
+import { getStart, progressFrom } from '../core/startpoint';
 import { nextMilestones } from '../core/milestones';
 import { intensityFor, phaseFor } from '../core/phases';
 import { onSettings, settings } from '../core/settings';
-import { ANCHORS, DST_CHANGES, PRELOAD, RELEASE } from '../core/timeline';
+import { DST_CHANGES, RELEASE } from '../core/timeline';
 import { DAY_MS, HOUR_MS } from '../core/tz';
 import { tickerItems } from '../data/quips';
 import { createSynthwave, SynthScene } from '../three/synthwave';
 import { h, setText, watchVisibility } from '../ui/dom';
 import { icon } from '../ui/icons';
 import { Odometer } from '../ui/odometer';
+import { briefingCard } from './briefing';
 
 export function heroSection(): HTMLElement {
   const stage = h('div.hero__stage', { 'aria-hidden': 'true' });
@@ -79,39 +79,23 @@ export function heroSection(): HTMLElement {
     ),
   );
 
-  /* Restzeit-Text --------------------------------------------------- */
-  const ivRange = h('span.interval__range');
-  const ivTitle = h('h2.interval__title');
-  const ivText = h('p.interval__text');
-  const intervalEl = h(
-    'a.interval',
-    { href: '#restzeit-atlas', title: 'Alle Restzeit-Texte im Restzeit-Atlas' },
-    h('span.interval__tag', 'Restzeit-Lage', ivRange),
-    ivTitle,
-    ivText,
-  );
-
-  /* Chips ----------------------------------------------------------- */
-  const chipNights = h('b');
-  const chipSchool = h('b');
-  const chipWeekends = h('b');
-  const chipPreload = h('b');
-  const chipPreloadLabel = h('span');
-  const chips = h(
-    'ul.hero__chips',
-    h('li.chip', icon('moon', 16), chipNights, h('span', '× schlafen')),
-    h('li.chip', icon('book', 16), chipSchool, h('span', 'Schultage')),
-    h('li.chip', icon('palm', 16), chipWeekends, h('span', 'Wochenenden')),
-    h('li.chip.chip--sun', icon('download', 16), chipPreloadLabel, chipPreload),
-  );
+  /* Tagesbriefing --------------------------------------------------- */
+  const brief = briefingCard();
 
   /* Fortschritt ----------------------------------------------------- */
   const progFill = h('span.hero-progress__fill');
   const progPct = h('span.hero-progress__pct');
+  const progStart = h('a.hero-progress__start', { href: '#studio', title: 'Startpunkt im Studio ändern' });
+  const syncStart = () => {
+    const st = getStart();
+    setText(progStart, `${st.short} · ${fmtDate(st.at, 'date')}`);
+  };
+  syncStart();
+  on('startpoint', syncStart);
   const progress = h(
     'div.hero-progress',
-    h('div.hero-progress__labels', h('span', 'Trailer 1 · 05.12.2023'), progPct, h('span', 'Release · 19.11.2026')),
-    h('div.hero-progress__track', { role: 'progressbar', 'aria-label': 'Fortschritt seit Trailer 1' }, progFill),
+    h('div.hero-progress__labels', progStart, progPct, h('span', 'Release · 19.11.2026')),
+    h('div.hero-progress__track', { role: 'progressbar', 'aria-label': 'Fortschritt seit deinem Startpunkt' }, progFill),
   );
 
   const nextMs = h('p.hero__next');
@@ -142,8 +126,7 @@ export function heroSection(): HTMLElement {
     finalEl,
     postEl,
     progress,
-    intervalEl,
-    chips,
+    brief.el,
     nextMs,
     dstNote,
   );
@@ -172,7 +155,7 @@ export function heroSection(): HTMLElement {
   section.addEventListener('click', (e) => {
     if (!scene) return;
     const target = e.target as HTMLElement;
-    if (target.closest('a,button,input,.count,.interval')) return;
+    if (target.closest('a,button,input,.count,.brief')) return;
     if (scene.hitSun(e.clientX, e.clientY)) {
       const n = sunClick();
       scene.flash();
@@ -206,7 +189,6 @@ export function heroSection(): HTMLElement {
     finalEl.hidden = m !== 'final';
     postEl.hidden = m !== 'post';
     section.dataset.mode = m;
-    intervalEl.classList.toggle('is-post', m === 'post');
   };
   section.dataset.mode = 'normal';
 
@@ -236,29 +218,7 @@ export function heroSection(): HTMLElement {
       setText(sinceEl, since.days ? `${num(since.days)} ${since.days === 1 ? 'Tag' : 'Tage'}, ${clockTxt}` : clockTxt);
     }
 
-    // Restzeit-Text
-    const iv = currentInterval(diff);
-    const ctx = intervalContext(now);
-    setText(ivRange, iv.range);
-    setText(ivTitle, iv.title);
-    setText(ivText, iv.text(ctx));
-
-    // Chips
-    const cal = calendarCounts(now);
-    setText(chipNights, num(cal.nights));
-    setText(chipSchool, num(cal.schoolDaysRemaining));
-    setText(chipWeekends, num(cal.weekends));
-    if (PRELOAD > now) {
-      setText(chipPreloadLabel, 'Preload in');
-      setText(chipPreload, humanDuration(PRELOAD - now, 2));
-    } else if (diff > 0) {
-      setText(chipPreloadLabel, 'Preload');
-      setText(chipPreload, 'läuft');
-    } else {
-      setText(chipPreloadLabel, 'Status');
-      setText(chipPreload, 'installiert');
-    }
-    chips.hidden = diff <= 0;
+    brief.update(now);
 
     // Nächster Meilenstein
     const nm = nextMilestones(now, 1)[0];
@@ -281,7 +241,7 @@ export function heroSection(): HTMLElement {
   function onFrame(now: number) {
     const diff = RELEASE - now;
     // Fortschritt seit Trailer 1 mit vielen Nachkommastellen
-    const frac = Math.min(1, Math.max(0, (now - ANCHORS.trailer1) / (RELEASE - ANCHORS.trailer1)));
+    const frac = progressFrom(getStart().at, now);
     progFill.style.transform = `scaleX(${frac})`;
     setText(progPct, `${num(frac * 100, 7, 7)} %`);
     if (mode === 'final') {
@@ -327,8 +287,5 @@ export function heroSection(): HTMLElement {
   clock.onSecond(onSecond);
   clock.onFrame(onFrame);
   onSecond(clock.now());
-  on('cheat', ({ code }) => {
-    if (code === 'BIGBANG') scene?.flash();
-  });
   return section;
 }

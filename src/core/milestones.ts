@@ -4,7 +4,9 @@
  */
 import { CONFIG } from '../config';
 import { fmtDstChange, num } from './format';
-import { ANCHORS, DST_CHANGES, RELEASE, TZ } from './timeline';
+import { on } from './bus';
+import { getStart } from './startpoint';
+import { DST_CHANGES, RELEASE, TZ } from './timeline';
 import { DAY_MS, HOUR_MS, MINUTE_MS, parseLocal } from './tz';
 
 export type MilestoneKind = 'days' | 'hours' | 'minutes' | 'seconds' | 'percent' | 'event';
@@ -106,21 +108,17 @@ function build(): Milestone[] {
     list.push({ id: `s${s}`, kind: 'seconds', at: RELEASE - s * 1000, label: `${num(s)} Sekunden`, detail });
   }
 
-  const percentAnchors: [string, number, string, number[]][] = [
-    ['t1', ANCHORS.trailer1, 'seit Trailer 1', [95, 96, 97, 98, 99, 99.5, 99.9, 99.99]],
-    ['gta5', ANCHORS.gta5, 'seit GTA V', [99, 99.5, 99.9, 99.99]],
-    ['y26', ANCHORS.year2026, 'des Jahres 2026 bis Release', [90, 95, 99]],
-  ];
-  for (const [key, start, label, marks] of percentAnchors) {
-    for (const p of marks) {
-      list.push({
-        id: `p-${key}-${p}`,
-        kind: 'percent',
-        at: start + (RELEASE - start) * (p / 100),
-        label: `${num(p, 2)} % ${label}`,
-        detail: `${num(p, 2)} % der Wartezeit ${label} sind geschafft.`,
-      });
-    }
+  // Prozentmarken relativ zum gewählten Startpunkt (siehe Startpunkt-Studio)
+  const start = getStart();
+  for (const p of [90, 95, 97, 98, 99, 99.5, 99.9, 99.99, 99.999]) {
+    const at = start.at + (RELEASE - start.at) * (p / 100);
+    list.push({
+      id: `p-${start.id}-${p}`,
+      kind: 'percent',
+      at,
+      label: `${num(p, 3)} % seit ${start.short}`,
+      detail: `${num(p, 3)} % der Wartezeit seit ${start.label} sind geschafft.`,
+    });
   }
 
   for (const e of CONFIG.events) {
@@ -147,14 +145,21 @@ function build(): Milestone[] {
   return list.sort((a, b) => a.at - b.at);
 }
 
-export const MILESTONES: Milestone[] = build();
+let cache: Milestone[] | null = null;
+on('startpoint', () => (cache = null));
+
+/** Alle Meilensteine (Prozentmarken folgen dem gewählten Startpunkt). */
+export function milestones(): Milestone[] {
+  if (!cache) cache = build();
+  return cache;
+}
 
 export function nextMilestones(now: number, count = 5): Milestone[] {
-  return MILESTONES.filter((m) => m.at > now).slice(0, count);
+  return milestones().filter((m) => m.at > now).slice(0, count);
 }
 
 export function passedBetween(from: number, to: number): Milestone[] {
-  return MILESTONES.filter((m) => m.at > from && m.at <= to);
+  return milestones().filter((m) => m.at > from && m.at <= to);
 }
 
 export const MILESTONE_KIND_LABEL: Record<MilestoneKind, string> = {

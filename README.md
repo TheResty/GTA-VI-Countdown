@@ -8,7 +8,7 @@ Release-Ziel: **Donnerstag, 19. November 2026, 00:00 Uhr MEZ** (Europe/Berlin).
 ```bash
 npm install
 npm run dev          # Entwicklungsserver auf http://localhost:5173
-npm test             # Unit-Tests für Zeitkern, Kalender, Astronomie, Phasen
+npm test             # Unit-Tests für Zeitkern, Kalender, Sonnenstand, Briefings
 npm run build        # Produktions-Build nach dist/
 npm run build:single # eine einzelne HTML-Datei (inkl. Fonts) nach dist-single/
 ```
@@ -27,7 +27,7 @@ Alles Zentrale steht in **`src/config.ts`**:
 | `school.freeDays`, `lessonsPerDay`, `dayStart/dayEnd` | Schulfreie Tage und Unterrichtszeiten |
 | `examsEnd` | Ende der Klausuren (24.11.2026) |
 | `assumptions` | Annahmen für Schätzungen (Schlaf, Mahlzeiten, Puls, Training …) |
-| `events` | Termine für Timeline und Countdown-Wand |
+| `events` | Termine für Timeline, Countdown-Wand und Tunnel-Tore |
 
 Rufname, Geburtsdatum, Einschulung, Standort und die Annahmen lassen sich zusätzlich direkt auf der Seite
 (Einstellungen oben rechts bzw. Bereich „Persönlich“) überschreiben. Eigene Countdowns legst du in der
@@ -36,18 +36,32 @@ Countdown-Wand an. Alles wird nur im Browser gespeichert (localStorage).
 ## Was drin ist
 
 - **Hero:** 3D-Synthwave-Fahrt (Neon-Gitter, Palmen, gestreifte Sonne), riesiger Live-Countdown,
-  persönlicher Restzeit-Text, Fortschritt seit Trailer 1, Live-Ticker.
-- **Bay 01 – Zeitspiegel:** welcher Moment in der Vergangenheit genauso weit entfernt ist wie der Release.
-- **Bay 02 – Telemetrie (21 Instrumente):** Einheiten-Kaskade, Startpunkte, Uhrwerk-Ringe, Sanduhr,
-  Countdown-Kalender, 13 Jahre in Wochen, Zeitspirale, Stundenbudget, Zahlensysteme, Zahlenmystik,
-  komprimierte Zeit, Zenons Paradoxon, Mondphasen, Sonnenaufgänge, kosmische Perspektive,
-  Planetentage & Relativität, Umrechner, historische Maßstäbe, Wochentage, Weltzeit, Zeitumstellung.
-- **Bay 03 – Zeittunnel (3D):** jeder verbleibende Tag als Neon-Ring bis zum Release-Portal.
-- **Bay 04 – Persönlich:** Wochenenden, Schultage, Körper-Zähler, Annahmen-Regler, Leben in Wochen, Freizeit-Bilanz.
-- **Bay 05 – Timeline:** interaktive Zeitachse, Countdown-Wand mit eigenen Countdowns, Meilenstein-Tracker, Restzeit-Atlas.
-- **Bay 06 – Rockstar-Historie:** Release-Abstände, Ankündigungszyklen, GTA V vs. VI, Verschiebungen, Release-Muster, Trivia.
-- **Bay 07 – HQ:** Daily Check-in & Serien, Respekt-Level, 36 Achievements, Cheat-Terminal, Besuchs-Log, Fahndungsstufe.
-- **Bay 08 – Zeitmaschine:** Vorschau aller Eskalationsstufen, der letzten 24 Stunden, des Vollbild-Countdowns und der Release-Feier.
+  Fortschritt seit deinem Startpunkt und das **Tagesbriefing**: ein eigener Text für jeden der letzten
+  36 Tage (Ferien, Zeitumstellung, Schulstart, Preload, letztes Wochenende …), am letzten Tag stundengenau,
+  in den letzten 45 Minuten minutengenau. Vergangene Briefings lassen sich nachlesen, kommende bleiben
+  gesperrt – auch in der Zeitmaschine.
+- **Bay 01 – Startpunkt-Studio:** Ab wann wartest du? Trailer 1, GTA V, Verschiebung, Ferienbeginn, erster
+  Besuch, Geburtstag oder ein eigener Moment – der gewählte Startpunkt gilt seitenweit (Hero-Fortschritt,
+  Prozent-Meilensteine, Zeitspiegel, Maßstäbe, Zeitachse).
+  - **Zeitlupe:** stufenlos zoombare Zeitachse von der gesamten Wartezeit bis auf 12 Millisekunden.
+    Riesenziffern für Jahr, Monat, Tag, Stunde, Minute, Sekunde; „Jetzt folgen“ lässt die Achse live
+    mitlaufen, der „Sturzflug ins Jetzt“ zoomt automatisch bis in die Millisekunden. Die Anzeige
+    „Zeitfluss“ verrät, wie schnell die Zeit gerade über den Bildschirm wandert – von Kontinentaldrift
+    bis Ocean Drive.
+  - **Sanduhr** mit echter Korn-Physik, **Wartetag** (die Wartezeit als 24-Stunden-Uhr) und
+    **Prozent-Marken** bis 99,9999 %.
+- **Bay 02 – Zeitspiegel:** welcher Moment in der Vergangenheit genauso weit entfernt ist wie der Release.
+- **Bay 03 – Zeittunnel (3D):** jeder verbleibende Tag als Ring aus 24 Stundensegmenten (Schlaf, Schule,
+  Freizeit), Tore für Schulstart, Zeitumstellung und Preload, Release-Portal mit Partikelwirbel, Autopilot.
+  Ringe antippen öffnet den Tag.
+- **Bay 04 – Telemetrie (9 Instrumente):** Countdown-Kalender, Zahlenmystik, Einheiten-Kaskade,
+  Stundenbudget, Wartezeit-Umrechner, 13 Jahre in Wochen, historische Maßstäbe, Sonnenaufgänge, Zahlensysteme.
+- **Bay 05 – Persönlich:** Wochenenden, Schultage, Körper-Zähler, Annahmen-Regler, Leben im Vergleich, Freizeit-Bilanz.
+- **Bay 06 – Timeline:** interaktive Zeitachse, Countdown-Wand mit eigenen Countdowns, Meilenstein-Tracker,
+  Abstände zwischen den GTA-Hauptteilen.
+- **Bay 07 – HQ:** Daily Check-in & Serien, Respekt-Level, 37 Achievements, Besuchs-Log, Fahndungsstufe.
+- **Bay 08 – Zeitmaschine:** Vorschau der Eskalationsstufen, der letzten 24 Stunden, des Vollbild-Countdowns
+  und der Release-Feier.
 
 ### Eskalation
 
@@ -58,8 +72,11 @@ die Release-Feier. Danach wechselt alles in den Post-Release-Modus.
 
 ### Easter Eggs
 
-Klassische GTA-Cheats funktionieren per Tastatur überall auf der Seite – oder über das Cheat-Terminal im HQ.
-Dazu kommen der Konami-Code und eine Sonne, die angeklickt werden möchte.
+Der Konami-Code und eine Sonne, die angeklickt werden möchte. Und ein paar Achievements, die erst
+auftauchen, wenn man sie findet.
+
+Die Briefing-Texte stehen in **`src/data/briefings.ts`** (je Tag bis zum Release), die Startpunkt-Vorgaben
+in **`src/core/startpoint.ts`**.
 
 ## Zeitberechnung
 

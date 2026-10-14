@@ -87,10 +87,6 @@ export function fmtDstChange(at: number, before: number, after: number): string 
   return `${fmtDate(at, 'date')}, ${hh(before)} → ${hh(after)} Uhr`;
 }
 
-export function fmtInZone(ms: number, tz: string, opts: Intl.DateTimeFormatOptions): string {
-  return new Intl.DateTimeFormat('de-DE', { timeZone: tz, ...opts }).format(new Date(ms));
-}
-
 export interface DurationParts {
   days: number;
   hours: number;

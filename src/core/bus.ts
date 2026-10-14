@@ -1,17 +1,18 @@
 /** Kleiner, typisierter Event-Bus für modulübergreifende Ereignisse. */
 import type { Phase } from './phases';
 import type { Milestone } from './milestones';
+import type { StartPoint } from './startpoint';
 
 export interface BusEvents {
   phase: { phase: Phase; previous: Phase | null };
   milestone: { milestone: Milestone; live: boolean };
   achievement: { id: string };
-  cheat: { code: string };
   checkin: { day: string; streak: number };
   toast: { title: string; text?: string; tone?: 'info' | 'good' | 'alert' | 'gold'; icon?: string };
   'game-changed': void;
   'custom-countdowns': void;
   celebrate: { replay: boolean };
+  startpoint: StartPoint;
 }
 
 type Handler<T> = (payload: T) => void;

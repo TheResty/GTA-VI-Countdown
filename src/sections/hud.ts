@@ -5,19 +5,19 @@
 import { on } from '../core/bus';
 import { clock } from '../core/clock';
 import { pad, splitDuration } from '../core/format';
-import { checkedInToday, getState, wantedLevel } from '../core/game';
+import { checkedInToday, wantedLevel } from '../core/game';
 import { phaseFor } from '../core/phases';
 import { RELEASE } from '../core/timeline';
 import { h, setText } from '../ui/dom';
 import { icon } from '../ui/icons';
 
 export const NAV = [
+  { id: 'studio', label: 'Studio' },
   { id: 'zeitspiegel', label: 'Zeitspiegel' },
-  { id: 'telemetrie', label: 'Telemetrie' },
   { id: 'zeittunnel', label: 'Zeittunnel' },
+  { id: 'telemetrie', label: 'Telemetrie' },
   { id: 'persoenlich', label: 'Persönlich' },
   { id: 'timeline', label: 'Timeline' },
-  { id: 'rockstar', label: 'Rockstar' },
   { id: 'hq', label: 'HQ' },
 ];
 
@@ -36,7 +36,6 @@ export function hud(openSettings: () => void): HTMLElement {
     { title: 'Fahndungsstufe', role: 'img' },
     Array.from({ length: 5 }, () => icon('star', 15, 'icon star')),
   );
-  const money = h('span.hud__money', { title: 'Kontostand (Cheat-Guthaben)' });
   const checkDot = h('span.hud__dot');
   const checkBtn = h(
     'a.hud__btn.hud__checkin',
@@ -86,7 +85,7 @@ export function hud(openSettings: () => void): HTMLElement {
       h('a.hud__brand', { href: '#start', 'aria-label': 'Zum Countdown' }, h('span.hud__logo', 'VI'), h('span.hud__name', 'Command Center')),
       h('div.hud__status', mini, phaseChip, sim),
       nav,
-      h('div.hud__right', stars, money, checkBtn, settingsBtn, menuBtn),
+      h('div.hud__right', stars, checkBtn, settingsBtn, menuBtn),
     ),
   );
 
@@ -95,9 +94,6 @@ export function hud(openSettings: () => void): HTMLElement {
     stars.querySelectorAll('.star').forEach((s, i) => s.classList.toggle('is-on', i < lvl));
     stars.setAttribute('aria-label', `Fahndungsstufe ${lvl} von 5`);
     stars.classList.toggle('is-active', lvl > 0);
-    const m = getState().money;
-    money.hidden = m <= 0;
-    setText(money, `$${String(m).padStart(9, '0')}`);
     checkDot.hidden = checkedInToday();
     checkBtn.classList.toggle('is-done', checkedInToday());
   };

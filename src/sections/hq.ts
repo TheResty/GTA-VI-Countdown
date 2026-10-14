@@ -18,15 +18,13 @@ import {
   visitsToday,
   wantedLevel,
 } from '../core/game';
-import { PHASES, PHASE_THRESHOLDS, phaseFor } from '../core/phases';
-import { RELEASE, TZ } from '../core/timeline';
+import { TZ } from '../core/timeline';
 import { civilAddDays, civilFromMs, civilKey } from '../core/tz';
-import { ACHIEVEMENTS, CHEATS } from '../data/achievements';
-import { tryCheat } from '../overlays/effects';
+import { ACHIEVEMENTS } from '../data/achievements';
 import { bay } from '../ui/bay';
 import { h, setText } from '../ui/dom';
 import { icon } from '../ui/icons';
-import { panel, registerModule } from '../ui/panel';
+import { panel } from '../ui/panel';
 
 /* ------------------------------------------------------------------ */
 /* G-01 Daily Check-in                                                 */
@@ -104,7 +102,7 @@ function respectPanel(): HTMLElement {
   const title = h('span.respect__title');
   const fill = h('span.bar__fill');
   const points = h('span.respect__points');
-  const stats = { visits: h('dd'), today: h('dd'), time: h('dd'), first: h('dd'), money: h('dd') };
+  const stats = { visits: h('dd'), today: h('dd'), time: h('dd'), first: h('dd') };
   const render = () => {
     const p = respect();
     const lv = respectLevel(p);
@@ -117,7 +115,6 @@ function respectPanel(): HTMLElement {
     setText(stats.today, num(visitsToday()));
     setText(stats.time, humanDuration(pr.activeSeconds * 1000, 2));
     setText(stats.first, fmtDateTime(pr.firstVisit));
-    setText(stats.money, `$${num(getState().money)}`);
   };
   render();
   on('game-changed', render);
@@ -140,7 +137,6 @@ function respectPanel(): HTMLElement {
         h('div', h('dt', 'Besuche heute'), stats.today),
         h('div', h('dt', 'Zeit im Command Center'), stats.time),
         h('div', h('dt', 'Erster Besuch'), stats.first),
-        h('div', h('dt', 'Kontostand'), stats.money),
       ),
     ),
     note: 'Respekt: Check-in = 5, Achievements je nach Schwierigkeit 10–150.',
@@ -201,104 +197,6 @@ function achievementsPanel(): HTMLElement {
 }
 
 /* ------------------------------------------------------------------ */
-/* G-04 Cheat-Terminal                                                 */
-/* ------------------------------------------------------------------ */
-function cheatTerminal(): HTMLElement {
-  const out = h('div.term__out', { 'aria-live': 'polite' });
-  const input = h<HTMLInputElement>('input.term__input#cheat-input', {
-    type: 'text',
-    autocomplete: 'off',
-    autocapitalize: 'characters',
-    spellcheck: false,
-    placeholder: 'Cheat eingeben …',
-    'aria-label': 'Cheat-Code',
-  });
-  const found = h('ul.term__found');
-  const print = (text: string, cls = '') => {
-    out.appendChild(h(`p${cls ? '.' + cls : ''}`, text));
-    while (out.children.length > 7) out.firstElementChild?.remove();
-    out.scrollTop = out.scrollHeight;
-  };
-  print('LEONIDA-OS v6.0 – Cheat-Schnittstelle bereit.', 'is-sys');
-  print('Tipp: Klassische GTA-Cheats funktionieren auch per Tastatur, überall auf der Seite.', 'is-sys');
-
-  const renderFound = () => {
-    const known = getState().cheats;
-    found.replaceChildren(
-      ...CHEATS.map((c) =>
-        h(`li${known.includes(c.code) ? '.is-found' : ''}`, known.includes(c.code) ? h('code', c.code) : h('code', '•'.repeat(Math.min(8, c.code.length))), h('span', known.includes(c.code) ? c.effect : c.hint)),
-      ),
-    );
-  };
-  renderFound();
-  on('game-changed', renderFound);
-
-  const form = h('form.term__form', h('span.term__prompt', '>'), input);
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const code = input.value.trim().toUpperCase().replace(/\s+/g, '');
-    if (!code) return;
-    print(`> ${code}`);
-    const res = tryCheat(code);
-    if (res) print(`CHEAT AKTIVIERT: ${res}`, 'is-ok');
-    else if (code === 'HELP' || code === 'HILFE') print('Bekannte Hinweise stehen unten. Groß-/Kleinschreibung ist egal.', 'is-sys');
-    else print('Unbekannter Code. Rockstar wäre stolz auf deine Kreativität.', 'is-err');
-    input.value = '';
-  });
-
-  return panel({
-    id: 'terminal',
-    code: 'G-04',
-    title: 'Cheat-Terminal',
-    kicker: 'Für Handys ohne Tastatur-Cheats. Neun Codes sind versteckt – die Hinweise helfen.',
-    tone: 'cyan',
-    span: 2,
-    body: h('div.term', out, form, h('p.subhead', `Gefundene Cheats`), found),
-    note: 'Cheats verändern nur diese Seite. Die Wartezeit lässt sich leider nicht wegcheaten.',
-  });
-}
-
-/* ------------------------------------------------------------------ */
-/* G-05 Eskalationsplan                                                */
-/* ------------------------------------------------------------------ */
-function escalationPanel(): HTMLElement {
-  const list = h('ol.escalation');
-  let lastKey = '';
-  const el = panel({
-    id: 'eskalation',
-    code: 'G-05',
-    title: 'Eskalationsplan',
-    kicker: 'Je näher der Release, desto lauter wird diese Seite. Alles schaltet sich automatisch frei.',
-    tone: 'orange',
-    span: 2,
-    body: list,
-  });
-  registerModule({
-    el,
-    second(now) {
-      const diff = RELEASE - now;
-      const cur = phaseFor(diff);
-      const key = `${cur.id}-${Math.floor(now / 60_000)}`;
-      if (key === lastKey) return;
-      lastKey = key;
-      list.replaceChildren(
-        ...PHASES.map((p) => {
-          const th = PHASE_THRESHOLDS.find((t) => t.id === p.id);
-          const at = th ? RELEASE - th.at : p.id === 'post' ? RELEASE + 86_400_000 : null;
-          const state = p.level < cur.level ? 'done' : p.level === cur.level ? 'active' : 'locked';
-          return h(
-            `li.esc.is-${state}`,
-            h('span.esc__code', p.code),
-            h('div.esc__text', h('b', p.label), h('span', p.unlocks), at ? h('small', state === 'locked' ? `ab ${fmtDateTime(at)}` : state === 'active' ? 'aktiv' : `seit ${fmtDateTime(at)}`) : h('small', state === 'active' ? 'aktiv' : 'erledigt')),
-          );
-        }),
-      );
-    },
-  });
-  return el;
-}
-
-/* ------------------------------------------------------------------ */
 /* G-06 Besuchs-Log & Fahndung                                         */
 /* ------------------------------------------------------------------ */
 function visitLog(): HTMLElement {
@@ -337,7 +235,7 @@ function visitLog(): HTMLElement {
         'p',
         lvl === 0
           ? `Fahndungsstufe 0. Besuche heute: ${visitsToday()}. Ab 5 Besuchen am Tag wird die Polizei von Leonida aufmerksam.`
-          : `Fahndungsstufe ${lvl}! ${plural(visitsToday(), 'Besuch', 'Besuche')} heute – das fällt auf. Tipp: Es gibt einen Cheat dagegen.`,
+          : `Fahndungsstufe ${lvl}! ${plural(visitsToday(), 'Besuch', 'Besuche')} heute – das fällt auf. Um Mitternacht verliert die Polizei das Interesse.`,
       ),
     );
   };
@@ -374,8 +272,8 @@ export function hqSection(): HTMLElement {
     script: 'Safehouse',
     title: 'HQ',
     tone: 'magenta',
-    lead: 'Check-ins, Serien, Achievements und versteckte Cheats. Alles wird lokal in deinem Browser gespeichert – kein Konto nötig.',
-    body: h('div.grid', checkinPanel(), respectPanel(), escalationPanel(), cheatTerminal(), visitLog(), achievementsPanel()),
+    lead: 'Check-ins, Serien, Respekt und Achievements. Alles wird lokal in deinem Browser gespeichert – kein Konto nötig.',
+    body: h('div.grid', checkinPanel(), respectPanel(), visitLog(), achievementsPanel()),
   });
 }
 

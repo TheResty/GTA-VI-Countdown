@@ -44,29 +44,12 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   { id: 'time_traveler', title: 'Zeitreisender', description: 'Die Zeitmaschine benutzt.', group: 'Entdecker', icon: 'clock', respect: 15 },
   { id: 'mirror', title: 'Spiegelblick', description: 'Im Zeitspiegel ein anderes Ziel gespiegelt.', group: 'Entdecker', icon: 'mirror', respect: 10 },
   { id: 'tunnel', title: 'Tunnelblick', description: 'Im Zeittunnel bis zum Release geflogen.', group: 'Entdecker', icon: 'tunnel', respect: 15 },
+  { id: 'startpoint', title: 'Eigene Zeitrechnung', description: 'Im Startpunkt-Studio einen eigenen Moment als Startpunkt gesetzt.', group: 'Entdecker', icon: 'target', respect: 15 },
+  { id: 'zoom_ms', title: 'Millisekunden-Jäger', description: 'In der Zeitlupe bis auf einzelne Millisekunden hineingezoomt.', group: 'Entdecker', icon: 'eye', respect: 25 },
+  { id: 'zoom_flight', title: 'Sturzflug', description: 'Den Auto-Zoom von der ganzen Wartezeit bis ins Jetzt erlebt.', group: 'Entdecker', icon: 'rocket', respect: 15 },
   { id: 'explorer', title: 'Komplett-Scroller', description: 'Bis ganz nach unten gescrollt.', group: 'Entdecker', icon: 'map', respect: 10 },
 
-  { id: 'cheat_first', title: 'Cheater', description: 'Den ersten Cheat eingegeben.', group: 'Geheim', icon: 'key', respect: 10, secret: true },
-  { id: 'cheat_all', title: 'Cheat-Enzyklopädie', description: 'Alle Cheats gefunden.', group: 'Geheim', icon: 'key', respect: 100, secret: true },
   { id: 'konami', title: '↑↑↓↓←→←→BA', description: 'Den Konami-Code eingegeben.', group: 'Geheim', icon: 'gamepad', respect: 30, secret: true },
   { id: 'sun_clicker', title: 'Sonnenanbeter', description: '7× auf die Sonne über Vice City geklickt.', group: 'Geheim', icon: 'sun', respect: 20, secret: true },
   { id: 'wanted_5', title: 'Meistgesucht', description: 'Fahndungsstufe 5 erreicht.', group: 'Geheim', icon: 'star', respect: 25, secret: true },
-];
-
-export interface CheatDef {
-  code: string;
-  hint: string;
-  effect: string;
-}
-
-export const CHEATS: CheatDef[] = [
-  { code: 'HESOYAM', hint: 'Der Klassiker aus San Andreas.', effect: '+250.000 $ und volle Gesundheit' },
-  { code: 'ASPIRINE', hint: 'Vice City hat Kopfschmerzen.', effect: 'Kopfschmerzen vom Warten geheilt' },
-  { code: 'PANZER', hint: 'Ein Fahrzeug mit Kette.', effect: 'Panzer-Lieferung' },
-  { code: 'BIGBANG', hint: 'Alles geht hoch.', effect: 'Explosion' },
-  { code: 'LEAVEMEALONE', hint: 'Die Polizei soll weggucken.', effect: 'Fahndungsstufe gelöscht' },
-  { code: 'LIFEISPASSINGMEBY', hint: 'Die Zeit soll schneller vergehen.', effect: 'Zeitraffer (rein optisch)' },
-  { code: 'LEONIDA', hint: 'Der Bundesstaat aus GTA VI.', effect: 'Palmenregen' },
-  { code: 'VICECITY', hint: 'Zurück ins Jahr 1986.', effect: 'VHS-Modus' },
-  { code: 'WASTED', hint: 'Das Wort, das niemand sehen will.', effect: 'Wasted-Bildschirm' },
 ];

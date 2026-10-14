@@ -114,8 +114,8 @@ html[data-level='6'] .hero__shade {
     radial-gradient(70% 50% at 50% 50%, rgba(var(--red-rgb), 0.18), transparent 70%);
 }
 
-html[data-level='5'] .interval,
-html[data-level='6'] .interval {
+html[data-level='5'] .brief,
+html[data-level='6'] .brief {
   border-color: rgba(var(--red-rgb), 0.6);
   box-shadow: 0 18px 50px -20px rgba(var(--red-rgb), 0.7);
 }

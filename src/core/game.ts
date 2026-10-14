@@ -2,7 +2,7 @@
  * Gamification: Besuche, Daily Check-ins, Serien, Achievements,
  * Fahndungsstufe und Kontostand. Alles lokal im Browser gespeichert.
  */
-import { ACHIEVEMENTS, CHEATS } from '../data/achievements';
+import { ACHIEVEMENTS } from '../data/achievements';
 import { emit } from './bus';
 import { calendarCounts, holidayOf } from './calendar';
 import { clock } from './clock';
@@ -21,7 +21,7 @@ import { civilAddDays, civilCompare, civilFromMs, civilKey, zonedParts, DAY_MS }
 
 let profile: ProfileState;
 let checkins: CheckinState;
-let state: GameState & { wantedClearDay?: string; wantedClearVisits?: number };
+let state: GameState;
 
 export function realNow(): number {
   return Date.now();
@@ -169,6 +169,7 @@ export function evaluateAchievements(): void {
   if (now > EXAMS_END) unlock('exam_survivor');
   if (settings().birthDate) unlock('configured');
   if (profile.activeSeconds >= 3600) unlock('minutes_60');
+  if (wantedLevel() >= 5) unlock('wanted_5');
 }
 
 /* ------------------------------------------------------------------ */
@@ -218,7 +219,7 @@ export function firstVisitDay(): string {
 }
 
 /* ------------------------------------------------------------------ */
-/* Fahndungsstufe & Geld                                               */
+/* Fahndungsstufe (nach Besuchen pro Tag)                              */
 /* ------------------------------------------------------------------ */
 
 export function visitsToday(): number {
@@ -226,48 +227,9 @@ export function visitsToday(): number {
 }
 
 export function wantedLevel(): number {
-  const key = todayKey(realNow());
-  let visits = visitsToday();
-  if (state.wantedClearDay === key) visits -= state.wantedClearVisits ?? 0;
-  const base = visits >= 50 ? 5 : visits >= 35 ? 4 : visits >= 20 ? 3 : visits >= 10 ? 2 : visits >= 5 ? 1 : 0;
-  const decay = Math.floor((realNow() - state.wantedAt) / (10 * 60_000));
-  const bonus = Math.max(0, state.wanted - decay);
-  return Math.min(5, Math.max(base, bonus));
-}
-
-export function addWanted(stars: number): void {
-  const current = wantedLevel();
-  state.wanted = Math.min(5, current + stars);
-  state.wantedAt = realNow();
-  saveState();
-  if (wantedLevel() >= 5) unlock('wanted_5');
-}
-
-export function clearWanted(): void {
-  state.wanted = 0;
-  state.wantedAt = realNow();
-  state.wantedClearDay = todayKey(realNow());
-  state.wantedClearVisits = visitsToday();
-  saveState();
-}
-
-export function addMoney(amount: number): void {
-  state.money += amount;
-  saveState();
-}
-
-export function registerCheat(code: string): boolean {
-  const known = CHEATS.some((c) => c.code === code);
-  if (!known) return false;
-  const isNew = !state.cheats.includes(code);
-  if (isNew) {
-    state.cheats.push(code);
-    saveState();
-  }
-  unlock('cheat_first');
-  if (CHEATS.every((c) => state.cheats.includes(c.code))) unlock('cheat_all');
-  emit('cheat', { code });
-  return isNew;
+  const visits = visitsToday();
+  const lvl = visits >= 50 ? 5 : visits >= 35 ? 4 : visits >= 20 ? 3 : visits >= 10 ? 2 : visits >= 5 ? 1 : 0;
+  return lvl;
 }
 
 export function sunClick(): number {

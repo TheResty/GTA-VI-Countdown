@@ -14,6 +14,7 @@ import './styles/layout.css';
 import './styles/hero.css';
 import './styles/modules.css';
 import './styles/overlays.css';
+import './styles/studio.css';
 import './styles/phases.css';
 
 import { emit, on } from './core/bus';
@@ -24,7 +25,7 @@ import { passedBetween } from './core/milestones';
 import { Phase, phaseFor, intensityFor } from './core/phases';
 import { onSettings, settings } from './core/settings';
 import { RELEASE } from './core/timeline';
-import { initCheatKeys } from './overlays/effects';
+import { initKonami } from './overlays/effects';
 import { initFinale, showPhaseBanner } from './overlays/finale';
 import { initSettings } from './overlays/settings';
 import { footer } from './sections/footer';
@@ -33,7 +34,7 @@ import { hqSection } from './sections/hq';
 import { hud } from './sections/hud';
 import { mirrorSection } from './sections/mirror';
 import { personalSection } from './sections/personal';
-import { rockstarSection } from './sections/rockstar';
+import { studioSection } from './sections/studio';
 import { telemetrySection } from './sections/telemetry';
 import { timelineSection } from './sections/timeline';
 import { timeMachineSection } from './sections/timemachine';
@@ -53,17 +54,17 @@ function boot(): void {
 
   const app = document.getElementById('app') ?? document.body;
   app.replaceChildren(
-    h('a.skip-link', { href: '#telemetrie' }, 'Zum Inhalt springen'),
+    h('a.skip-link', { href: '#studio' }, 'Zum Inhalt springen'),
     hud(openSettings),
     h(
       'main#main',
       heroSection(),
+      studioSection(),
       mirrorSection(),
-      telemetrySection(),
       tunnelSection(),
+      telemetrySection(),
       personalSection(),
       timelineSection(),
-      rockstarSection(),
       hqSection(),
       timeMachineSection(),
     ),
@@ -71,7 +72,7 @@ function boot(): void {
   );
 
   initFinale();
-  initCheatKeys();
+  initKonami();
 
   /* Eskalationsphase ------------------------------------------------ */
   let phase: Phase | null = null;

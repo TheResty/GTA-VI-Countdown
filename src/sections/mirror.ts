@@ -3,7 +3,10 @@
  * entfernt wie das Ziel in der Zukunft? Spiegelpunkt = 2 · jetzt − Ziel.
  */
 import { CONFIG } from '../config';
-import { moonState, sunTimes } from '../core/astro';
+import { sunTimes } from '../core/astro';
+import { countDaysBetween } from '../core/calendar';
+import { getStart } from '../core/startpoint';
+import { on } from '../core/bus';
 import { clock } from '../core/clock';
 import { fmtDate, fmtDateTime, humanDuration, longDuration, num, pad } from '../core/format';
 import { unlock } from '../core/game';
@@ -112,7 +115,7 @@ export function mirrorSection(): HTMLElement {
       h(
         'dl.facts',
         h('div.fact', h('dt', 'Damals'), factThen),
-        h('div.fact', h('dt', 'Mond damals'), factMoon),
+        h('div.fact', h('dt', 'Wochenenden damals'), factMoon),
         h('div.fact', h('dt', 'Sonnenaufgang damals'), factSun),
         h('div.fact', h('dt', 'Position im Jahr'), factYear),
         h('div.fact', h('dt', 'Dazwischen passiert'), factBetween),
@@ -145,9 +148,9 @@ export function mirrorSection(): HTMLElement {
 
     const thenRemaining = target.at - mirror;
     setText(factThen, `Damals waren es noch ${humanDuration(thenRemaining, 2)} bis ${target.label} – doppelt so viel wie heute.`);
-    const mThen = moonState(mirror);
-    const mTarget = moonState(target.at);
-    setText(factMoon, `${mThen.name} (${num(mThen.illumination * 100)} % beleuchtet). Beim Ziel: ${mTarget.name}.`);
+    const targetDay = civilFromMs(target.at, TZ);
+    const sundays = (from: number) => countDaysBetween(civilFromMs(from, TZ), targetDay, (c) => new Date(Date.UTC(c.y, c.m - 1, c.d)).getUTCDay() === 0);
+    setText(factMoon, `Vom Spiegelpunkt bis ${target.label} lagen ${sundays(mirror)} Wochenenden. Heute sind es nur noch ${sundays(now)}.`);
     const loc = settings().location;
     const st = sunTimes(civilFromMs(mirror, TZ), loc.lat, loc.lon);
     setText(factSun, st.sunrise ? `${fmtDate(st.sunrise, 'time')} Uhr in ${loc.name} (Tageslicht: ${humanDuration(st.dayLength, 2)})` : '–');
@@ -181,7 +184,9 @@ export function mirrorSection(): HTMLElement {
   }
 
   function renderPairs(now: number) {
+    const st = getStart();
     const anchors: [string, number][] = [
+      ...(['gta5', 'confirmed', 'leak', 'trailer1', 'trailer2', 'delay2', 'preorders'].includes(st.id) ? [] : [[`Dein Startpunkt: ${st.label}`, st.at] as [string, number]]),
       ['GTA V Release', ANCHORS.gta5],
       ['GTA VI offiziell bestätigt', ANCHORS.gta6Confirmed],
       ['Der große Leak', ANCHORS.leak],
@@ -206,6 +211,7 @@ export function mirrorSection(): HTMLElement {
     );
   }
 
+  on('startpoint', () => renderPairs(clock.now()));
   registerModule({
     el: feature,
     second: (now) => {
@@ -220,7 +226,7 @@ export function mirrorSection(): HTMLElement {
 
   return bay({
     id: 'zeitspiegel',
-    index: 1,
+    index: 2,
     eyebrow: 'Zentrales Instrument',
     script: 'Zeit',
     title: 'Zeitspiegel',

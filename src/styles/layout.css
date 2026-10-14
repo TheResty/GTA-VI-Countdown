@@ -169,13 +169,6 @@
   gap: 1px;
 }
 
-.hud__money {
-  font: 700 14px/1 var(--font-mono);
-  color: #7dffb0;
-  text-shadow: 0 0 10px rgba(var(--mint-rgb), 0.5);
-  letter-spacing: 0.04em;
-}
-
 .hud__btn {
   position: relative;
   display: inline-flex;
@@ -298,7 +291,6 @@
   }
 
   .hud__phase,
-  .hud__money,
   .hud__btn-label {
     display: none;
   }

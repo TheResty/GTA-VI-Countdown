@@ -129,13 +129,3 @@ export function intensityFor(diff: number): number {
   return Math.max(0, Math.min(1, 1 - Math.log10(1 + days) / Math.log10(61)));
 }
 
-export const PHASE_THRESHOLDS: { id: PhaseId; at: number }[] = [
-  { id: 't30', at: 30 * DAY_MS },
-  { id: 't14', at: 14 * DAY_MS },
-  { id: 't7', at: 7 * DAY_MS },
-  { id: 't3', at: 3 * DAY_MS },
-  { id: 't1', at: DAY_MS },
-  { id: 'lasthour', at: HOUR_MS },
-  { id: 'lastminute', at: 60_000 },
-  { id: 'release', at: 0 },
-];

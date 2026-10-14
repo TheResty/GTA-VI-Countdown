@@ -109,7 +109,7 @@ export function timeMachineSection(): HTMLElement {
     script: 'Delorean',
     title: 'Zeitmaschine',
     tone: 'night',
-    lead: 'Vorschau auf alles, was noch kommt: die Eskalationsstufen, die Inszenierung der letzten 24 Stunden, den Vollbild-Countdown und die Release-Feier. Die echte Zeit läuft im Hintergrund weiter.',
+    lead: 'Vorschau auf alles, was noch kommt: die Eskalationsstufen, die Inszenierung der letzten 24 Stunden, den Vollbild-Countdown und die Release-Feier. Die echte Zeit läuft im Hintergrund weiter – und die Tagesbriefings bleiben bis zu ihrem echten Tag versiegelt.',
     body,
   });
 }

@@ -1,12 +1,11 @@
 /**
- * Mathematische Module: Zahlensysteme, Zahlenmystik, komprimierte Zeit
- * und Zenons Paradoxon.
+ * Mathematische Module: Zahlensysteme und Zahlenmystik.
  */
-import { fmtDateTime, humanDuration, num, pad } from '../core/format';
-import { MILESTONES } from '../core/milestones';
-import { ANCHORS, RELEASE } from '../core/timeline';
+import { fmtDateTime, humanDuration, num } from '../core/format';
+import { milestones } from '../core/milestones';
+import { RELEASE } from '../core/timeline';
 import { DAY_MS } from '../core/tz';
-import { h, s, setAttr, setText } from '../ui/dom';
+import { h, setText } from '../ui/dom';
 import { panel, registerModule } from '../ui/panel';
 
 /* ------------------------------------------------------------------ */
@@ -181,154 +180,8 @@ export function numberMystic(): HTMLElement {
         const r = prevRepdigit(sec);
         setText(nextRep, r ? `${num(r)} am ${fmtDateTime(RELEASE - r * 1000, true)}` : '–');
       }
-      const nm = MILESTONES.find((m) => m.kind === 'seconds' && m.at > now);
+      const nm = milestones().find((m) => m.kind === 'seconds' && m.at > now);
       setText(nextNice, nm ? `${nm.label} – ${nm.detail}` : '–');
-    },
-  });
-  return el;
-}
-
-/* ------------------------------------------------------------------ */
-/* T-11 Komprimierte Zeit                                              */
-/* ------------------------------------------------------------------ */
-export function compressedTime(): HTMLElement {
-  const handH = s('line.face__hand.face__hand--h', { x1: '60', y1: '60', x2: '60', y2: '30' });
-  const handM = s('line.face__hand.face__hand--m', { x1: '60', y1: '60', x2: '60', y2: '18' });
-  const handS = s('line.face__hand.face__hand--s', { x1: '60', y1: '66', x2: '60', y2: '14' });
-  const ticks = Array.from({ length: 12 }, (_, i) => {
-    const a = (i / 12) * Math.PI * 2;
-    return s('line.face__tick', {
-      x1: String(60 + Math.sin(a) * 46),
-      y1: String(60 - Math.cos(a) * 46),
-      x2: String(60 + Math.sin(a) * 52),
-      y2: String(60 - Math.cos(a) * 52),
-    });
-  });
-  const face = s(
-    'svg.face',
-    { viewBox: '0 0 120 120', role: 'img', 'aria-label': 'Die Wartezeit als ein einziger Tag' },
-    s('circle.face__rim', { cx: '60', cy: '60', r: '56' }),
-    ticks,
-    handH,
-    handM,
-    handS,
-    s('circle.face__pin', { cx: '60', cy: '60', r: '3' }),
-  );
-  const time = h('b.compress__time');
-  const asYear = h('dd');
-  const asMatch = h('dd');
-  const asLesson = h('dd');
-  const asMovie = h('dd');
-  const el = panel({
-    id: 'komprimiert',
-    code: 'T-11',
-    title: 'Komprimierte Zeit',
-    kicker: 'Die gesamte Wartezeit seit Trailer 1, gestaucht auf einen einzigen Tag.',
-    tone: 'orange',
-    body: h(
-      'div.compress',
-      h('div.compress__clock', face, h('p', 'Auf der Wartetag-Uhr ist es', time)),
-      h(
-        'dl.kv',
-        h('div', h('dt', 'Als Kalenderjahr'), asYear),
-        h('div', h('dt', 'Als Fußballspiel'), asMatch),
-        h('div', h('dt', 'Als Schulstunde'), asLesson),
-        h('div', h('dt', 'Als 2-Stunden-Film'), asMovie),
-      ),
-    ),
-    note: 'Startpunkt: Trailer 1 (05.12.2023, 00:00 Uhr MEZ), Ziel: Release. 00:00 Uhr = Trailer 1, 24:00 Uhr = GTA VI.',
-  });
-  const months = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
-  registerModule({
-    el,
-    frame(now) {
-      const f = Math.min(1, Math.max(0, (now - ANCHORS.trailer1) / (RELEASE - ANCHORS.trailer1)));
-      const daySec = f * 86400;
-      const hh = Math.floor(daySec / 3600);
-      const mm = Math.floor((daySec % 3600) / 60);
-      const ss = daySec % 60;
-      setText(time, `${pad(hh)}:${pad(mm)}:${pad(ss)} Uhr`);
-      const rot = (deg: number, el: SVGElement) => setAttr(el, 'transform', `rotate(${deg} 60 60)`);
-      rot((daySec / 43200) * 360, handH);
-      rot(((daySec % 3600) / 3600) * 360, handM);
-      rot((ss / 60) * 360, handS);
-    },
-    second(now) {
-      const f = Math.min(1, Math.max(0, (now - ANCHORS.trailer1) / (RELEASE - ANCHORS.trailer1)));
-      const doy = f * 365;
-      const d = new Date(Date.UTC(2025, 0, 1) + Math.min(364.999, doy) * DAY_MS);
-      setText(asYear, `${d.getUTCDate()}. ${months[d.getUTCMonth()]}, ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())} Uhr`);
-      const minute = f * 90;
-      setText(asMatch, minute >= 90 ? 'Abpfiff!' : `${Math.floor(minute) + 1}. Minute`);
-      const lm = f * 45;
-      setText(asLesson, `Minute ${Math.floor(lm)}:${pad((lm % 1) * 60)} von 45`);
-      const mv = f * 120;
-      setText(asMovie, mv >= 118 ? 'Abspann läuft' : `${Math.floor(mv)} Min. – ${mv > 100 ? 'das Finale beginnt' : mv > 60 ? 'der Plot zieht an' : 'noch Einleitung'}`);
-      if (this.frame) this.frame(now);
-    },
-  });
-  return el;
-}
-
-/* ------------------------------------------------------------------ */
-/* T-12 Zenons Paradoxon                                               */
-/* ------------------------------------------------------------------ */
-export function zeno(): HTMLElement {
-  const list = h('ol.zeno');
-  const count = h('b');
-  const W = 360;
-  const axis = s('g');
-  const marker = s('circle.zeno__now', { cx: '0', cy: '34', r: '6' });
-  const svg = s('svg.zeno__axis', { viewBox: `0 0 ${W} 64`, role: 'img', 'aria-label': 'Logarithmische Restzeit-Achse' }, axis, marker);
-  const ticks: [number, string][] = [
-    [1000, '1 s'],
-    [60_000, '1 min'],
-    [3_600_000, '1 h'],
-    [DAY_MS, '1 Tag'],
-    [365 * DAY_MS, '1 Jahr'],
-  ];
-  const maxMs = 365 * DAY_MS;
-  const xOf = (ms: number) => 16 + (Math.log10(Math.max(1000, ms) / 1000) / Math.log10(maxMs / 1000)) * (W - 40);
-  axis.append(
-    s('line.zeno__line', { x1: '16', x2: String(W - 24), y1: '34', y2: '34' }),
-    ...ticks.flatMap(([ms, l]) => [
-      s('line.zeno__tick', { x1: String(xOf(ms)), x2: String(xOf(ms)), y1: '28', y2: '40' }),
-      s('text.zeno__label', { x: String(xOf(ms)), y: '58', 'text-anchor': 'middle' }, l),
-    ]),
-  );
-  const el = panel({
-    id: 'zenon',
-    code: 'T-12',
-    title: 'Zenons Paradoxon',
-    kicker: 'Achilles holt die Schildkröte nie ein? Die Restzeit halbiert sich immer wieder – und kommt trotzdem an.',
-    tone: 'cyan',
-    body: h('div', svg, h('p.zeno__count', 'Halbierungen bis zur letzten Sekunde: ', count), list),
-    note: 'Logarithmische Achse: Jede Halbierung ist auf ihr gleich lang – deshalb fühlt sich das Ende nie näher an.',
-  });
-  let lastKey = '';
-  registerModule({
-    el,
-    second(now) {
-      const rem = Math.max(0, RELEASE - now);
-      setAttr(marker, 'cx', String(xOf(rem)));
-      const n = rem > 1000 ? Math.floor(Math.log2(rem / 1000)) : 0;
-      setText(count, num(n));
-      const key = `${n}-${Math.floor(now / 60_000)}`;
-      if (key === lastKey) return;
-      lastKey = key;
-      const items: HTMLElement[] = [];
-      for (let k = 1; k <= 6 && rem / 2 ** k > 1000; k++) {
-        const at = RELEASE - rem / 2 ** k;
-        items.push(
-          h(
-            'li',
-            h('span.zeno__frac', `1/${2 ** k}`),
-            h('span', fmtDateTime(at)),
-            h('span.zeno__rest', `Rest: ${humanDuration(rem / 2 ** k, 2)}`),
-          ),
-        );
-      }
-      list.replaceChildren(...items);
     },
   });
   return el;

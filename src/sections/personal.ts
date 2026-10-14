@@ -397,7 +397,7 @@ function freeTimePanel(): HTMLElement {
 export function personalSection(): HTMLElement {
   return bay({
     id: 'persoenlich',
-    index: 4,
+    index: 5,
     eyebrow: 'Persönliche Zeitstatistiken',
     script: 'Du',
     title: 'Deine Wartezeit',

@@ -7,8 +7,9 @@ import { emit, on } from '../core/bus';
 import { clock } from '../core/clock';
 import { fmtDate, fmtDateTime, fmtDstChange, humanDuration, num, pad, relative, splitDuration } from '../core/format';
 import { getProfile, unlock } from '../core/game';
-import { INTERVALS, currentInterval, intervalContext } from '../core/intervals';
-import { MILESTONES, MILESTONE_KIND_LABEL, Milestone, MilestoneKind } from '../core/milestones';
+import { MILESTONE_KIND_LABEL, Milestone, MilestoneKind, milestones } from '../core/milestones';
+import { getStart } from '../core/startpoint';
+import { gapsChart } from '../modules/gaps';
 import { CustomCountdown, load, save } from '../core/store';
 import { ANCHORS, DST_CHANGES, RELEASE, TZ } from '../core/timeline';
 import { DAY_MS, parseLocal } from '../core/tz';
@@ -58,7 +59,7 @@ function allEvents(): TLEvent[] {
   for (const c of customCountdowns()) {
     list.push({ id: `u-${c.id}`, at: parseLocal(c.date, TZ), title: c.title, detail: 'Eigener Countdown', lane: 'personal', kind: 'custom' });
   }
-  for (const m of MILESTONES.filter((m) => m.major && m.kind === 'days')) {
+  for (const m of milestones().filter((m) => m.major && m.kind === 'days')) {
     list.push({ id: `m-${m.id}`, at: m.at, title: `T-${m.id.slice(1)} Tage`, detail: m.detail, lane: 'countdown', kind: 'milestone' });
   }
   return list.sort((a, b) => a.at - b.at);
@@ -87,7 +88,7 @@ function interactiveTimeline(): HTMLElement {
   const ranges = [
     { id: 'all', label: '1997 – heute', from: parseLocal('1997-06-01', TZ), to: parseLocal('2027-02-01', TZ) },
     { id: 'v6', label: 'GTA V → VI', from: parseLocal('2013-06-01', TZ), to: parseLocal('2027-01-01', TZ) },
-    { id: 't1', label: 'Seit Trailer 1', from: parseLocal('2023-10-01', TZ), to: parseLocal('2026-12-31', TZ) },
+    { id: 'sp', label: 'Seit Startpunkt', from: 0, to: 0 },
     { id: 'y26', label: '2026', from: parseLocal('2026-01-01', TZ), to: parseLocal('2027-01-10', TZ) },
     { id: 'near', label: 'Nächste 60 Tage', from: 0, to: 0 },
   ];
@@ -157,8 +158,10 @@ function interactiveTimeline(): HTMLElement {
 
   function render(now: number) {
     const r = ranges.find((x) => x.id === range)!;
-    const from = r.id === 'near' ? now - 7 * DAY_MS : r.from;
-    const to = r.id === 'near' ? now + 60 * DAY_MS : r.to;
+    const sp = getStart().at;
+    const margin = Math.max(3 * DAY_MS, (RELEASE - sp) * 0.06);
+    const from = r.id === 'near' ? now - 7 * DAY_MS : r.id === 'sp' ? sp - margin : r.from;
+    const to = r.id === 'near' ? now + 60 * DAY_MS : r.id === 'sp' ? RELEASE + margin : r.to;
     const span = to - from;
     const xOf = (t: number) => 30 + ((t - from) / span) * (W - 60);
     const events = allEvents().filter((e) => enabled.has(e.lane) && e.at >= from && e.at <= to);
@@ -266,7 +269,13 @@ function interactiveTimeline(): HTMLElement {
     const relX = xOf(RELEASE);
     const relEls = RELEASE >= from && RELEASE <= to ? [s('line.tl__release', { x1: String(relX), x2: String(relX), y1: '14', y2: String(H - 22) }), s('text.tl__release-label', { x: String(relX), y: '12', 'text-anchor': 'middle' }, 'GTA VI')] : [];
 
-    const svg = s('svg.tl', { viewBox: `0 0 ${W} ${H}`, width: String(W), height: String(H), role: 'img', 'aria-label': 'Interaktive Zeitachse' }, ticks, laneEls, relEls, nowEls, labels, dots);
+    const spX = xOf(sp);
+    const spEls =
+      sp >= from && sp <= to
+        ? [s('line.tl__start', { x1: String(spX), x2: String(spX), y1: '14', y2: String(H - 22) }), s('text.tl__start-label', { x: String(spX), y: '12', 'text-anchor': 'middle' }, 'START')]
+        : [];
+
+    const svg = s('svg.tl', { viewBox: `0 0 ${W} ${H}`, width: String(W), height: String(H), role: 'img', 'aria-label': 'Interaktive Zeitachse' }, ticks, laneEls, spEls, relEls, nowEls, labels, dots);
     svgWrap.replaceChildren(svg);
     // Zum „Jetzt“ scrollen
     requestAnimationFrame(() => {
@@ -473,7 +482,7 @@ function countdownWall(): HTMLElement {
 /* L-03 Meilenstein-Tracker                                            */
 /* ------------------------------------------------------------------ */
 function milestoneTracker(): HTMLElement {
-  const majors = MILESTONES.filter((m) => m.kind === 'days' && m.major);
+  const majors = milestones().filter((m) => m.kind === 'days' && m.major);
   const majorEls = majors.map((m) => ({ m, el: h('li.major'), status: h('span.major__status'), when: h('span.major__when') }));
   majorEls.forEach((x) => x.el.append(h('b.major__label', `T-${m2d(x.m)}`), x.when, x.status));
   const nextBox = h('div.next-ms');
@@ -512,6 +521,7 @@ function milestoneTracker(): HTMLElement {
     body: h('div', h('ul.majors', majorEls.map((x) => x.el)), nextBox, h('div.ms-scroll', list)),
   });
   let lastKey = '';
+  on('startpoint', () => (lastKey = ''));
   registerModule({
     el,
     second(now) {
@@ -521,7 +531,7 @@ function milestoneTracker(): HTMLElement {
         setText(x.when, `${fmtDate(x.m.at, 'dateShort')}, ${fmtDate(x.m.at, 'time')}`);
         setText(x.status, done ? 'erreicht' : humanDuration(x.m.at - now, 2));
       }
-      const next = MILESTONES.find((m) => m.at > now);
+      const next = milestones().find((m) => m.at > now);
       if (next) {
         const p = splitDuration(next.at - now);
         nextBox.replaceChildren(
@@ -534,7 +544,7 @@ function milestoneTracker(): HTMLElement {
       const key = `${kind}-${Math.floor(now / 30_000)}`;
       if (key === lastKey) return;
       lastKey = key;
-      const items = MILESTONES.filter((m) => kind === 'all' || m.kind === kind);
+      const items = milestones().filter((m) => kind === 'all' || m.kind === kind);
       list.replaceChildren(
         ...items.map((m) =>
           h(
@@ -560,68 +570,17 @@ function m2d(m: Milestone): string {
   return m.id.slice(1);
 }
 
-/* ------------------------------------------------------------------ */
-/* L-04 Restzeit-Atlas                                                 */
-/* ------------------------------------------------------------------ */
-function intervalAtlas(): HTMLElement {
-  const list = h('ol.atlas');
-  const el = panel({
-    id: 'atlas',
-    code: 'L-04',
-    title: 'Restzeit-Atlas',
-    kicker: 'Für jede Restzeit-Phase ein eigener Text. Kommende Phasen zeigen eine Vorschau – berechnet für genau den Moment, in dem sie beginnen.',
-    tone: 'violet',
-    span: 2,
-    tall: true,
-    body: h('div.atlas-scroll', list),
-  });
-  el.id = 'restzeit-atlas';
-  let lastKey = '';
-  registerModule({
-    el,
-    second(now) {
-      const diff = RELEASE - now;
-      const cur = currentInterval(diff);
-      const key = `${cur.id}-${Math.floor(now / 60_000)}`;
-      if (key === lastKey) return;
-      lastKey = key;
-      list.replaceChildren(
-        ...INTERVALS.map((iv) => {
-          const isCur = iv === cur;
-          const passed = diff < iv.min;
-          // Vorschau-Zeitpunkt: Beginn der Phase (bzw. jetzt für die aktuelle)
-          let at = now;
-          if (!isCur && !passed) at = Number.isFinite(iv.max) ? RELEASE - iv.max + 1000 : now;
-          if (passed) at = Number.isFinite(iv.min) ? RELEASE - Math.max(iv.min, -400 * DAY_MS) - 1000 : now;
-          const text = iv.text(intervalContext(at));
-          const startsAt = Number.isFinite(iv.max) ? RELEASE - iv.max : null;
-          return h(
-            `li.atlas__item${isCur ? '.is-current' : ''}${passed ? '.is-past' : ''}`,
-            h('div.atlas__meta', h('span.atlas__range', iv.range), isCur ? h('span.badge', 'Jetzt') : startsAt && startsAt > now ? h('span.atlas__when', `ab ${fmtDateTime(startsAt)}`) : null),
-            h('b.atlas__title', iv.title),
-            h('p.atlas__text', text),
-          );
-        }),
-      );
-      const curEl = list.querySelector<HTMLElement>('.is-current');
-      const sc = list.parentElement;
-      if (curEl && sc) sc.scrollTop = Math.max(0, curEl.offsetTop - 20);
-    },
-  });
-  return el;
-}
-
 export function timelineSection(): HTMLElement {
-  const total = MILESTONES.length;
+  const total = milestones().length;
   return bay({
     id: 'timeline',
-    index: 5,
+    index: 6,
     eyebrow: 'Timeline & Meilensteine',
     script: 'Route',
     title: 'Der Weg nach Leonida',
     tone: 'ocean',
     lead: `Vergangene und kommende Ereignisse, ${num(total)} exakt berechnete Meilensteine und eigene Countdowns – etwa für das Ende der Klausuren am 24. November.`,
-    body: h('div.grid', interactiveTimeline(), countdownWall(), milestoneTracker(), intervalAtlas()),
+    body: h('div.grid', interactiveTimeline(), countdownWall(), milestoneTracker(), gapsChart()),
   });
 }
 
