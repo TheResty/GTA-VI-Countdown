@@ -48,6 +48,8 @@ export const ANCHORS = {
   trailer2: at('2025-05-06T00:00'),
   delay2: at('2025-11-06T00:00'),
   preorders: at('2026-06-25T00:00'),
+  extendedLook: at('2026-08-27T21:00'),
+  launchTrailer: at('2026-10-15T15:00'), // 9 Uhr Ostküstenzeit
   year2026: at('2026-01-01T00:00'),
 };
 

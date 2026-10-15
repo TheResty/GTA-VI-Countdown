@@ -15,7 +15,7 @@ export function telemetrySection(): HTMLElement {
   const days = Math.max(0, Math.ceil((RELEASE - clock.now()) / 86_400_000));
   return bay({
     id: 'telemetrie',
-    index: 4,
+    index: 5,
     eyebrow: '9 Instrumente · live',
     script: 'Mission',
     title: 'Telemetrie',

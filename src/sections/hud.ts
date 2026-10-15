@@ -12,6 +12,7 @@ import { h, setText } from '../ui/dom';
 import { icon } from '../ui/icons';
 
 export const NAV = [
+  { id: 'intel', label: 'Intel' },
   { id: 'studio', label: 'Studio' },
   { id: 'zeitspiegel', label: 'Zeitspiegel' },
   { id: 'zeittunnel', label: 'Zeittunnel' },

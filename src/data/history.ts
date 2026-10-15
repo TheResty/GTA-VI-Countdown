@@ -8,7 +8,7 @@ export type HistoryKind = 'release' | 'announce' | 'trailer' | 'delay' | 'leak' 
 
 export interface HistoryEvent {
   id: string;
-  date: string; // YYYY-MM-DD
+  date: string; // YYYY-MM-DD oder YYYY-MM-DDTHH:mm (deutsche Zeit)
   approx?: boolean;
   title: string;
   detail: string;
@@ -64,7 +64,10 @@ export const HISTORY: HistoryEvent[] = [
   { id: 'delay1', date: '2025-05-02', kind: 'delay', game: 'GTA VI', title: 'Erste Verschiebung', detail: 'Von „Herbst 2025“ auf den 26. Mai 2026.' },
   { id: 'trailer2', date: '2025-05-06', kind: 'trailer', game: 'GTA VI', title: 'GTA VI Trailer 2', detail: 'Laut Rockstar über 475 Mio. Aufrufe in 24 Std. über alle Plattformen.' },
   { id: 'delay2', date: '2025-11-06', kind: 'delay', game: 'GTA VI', title: 'Zweite Verschiebung', detail: 'Vom 26. Mai 2026 auf den 19. November 2026.' },
-  { id: 'preorders', date: '2026-06-25', kind: 'milestone', game: 'GTA VI', title: 'Vorbestellungen starten', detail: 'Laut Berichten mit 79,99 US-$ für die Standard-Edition.' },
+  { id: 'preorders', date: '2026-06-25', kind: 'milestone', game: 'GTA VI', title: 'Vorbestellungen starten', detail: 'Standard 79,99 US-$, Ultimate 99,99 US-$. Die Box enthält keine Disc, sondern einen Download-Code.' },
+  { id: 'cyberleek', date: '2026-08-18', kind: 'leak', game: 'GTA VI', title: 'CyberLeek-Leaks beginnen', detail: 'Unveröffentlichte Gameplay-Clips und angebliche Kartenbilder tauchen auf. Rockstar lässt sie per DMCA entfernen.' },
+  { id: 'extended-look', date: '2026-08-27T21:00', kind: 'trailer', game: 'GTA VI', title: 'An Extended Look', detail: 'Rund 26 Minuten Gameplay – zuerst auf Netflix, sechs Stunden später auf YouTube.' },
+  { id: 'launch-trailer', date: '2026-10-15T15:00', kind: 'trailer', game: 'GTA VI', title: 'GTA VI Launch-Trailer', detail: 'Ohne Vorankündigung: 90 Sekunden, komplett in-game auf der PS5. Musik: Justice – „Flower in a Hurricane“.' },
   { id: 'preload', date: '2026-11-12', kind: 'milestone', game: 'GTA VI', title: 'Preload-Start', detail: 'Download vorab, spielen noch nicht.' },
   { id: 'gta6', date: '2026-11-19', kind: 'release', game: 'GTA VI', title: 'GTA VI erscheint', detail: 'PS5 und Xbox Series X|S. Ein PC-Termin ist nicht angekündigt.' },
 ];

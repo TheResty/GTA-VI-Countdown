@@ -574,7 +574,7 @@ export function timelineSection(): HTMLElement {
   const total = milestones().length;
   return bay({
     id: 'timeline',
-    index: 6,
+    index: 7,
     eyebrow: 'Timeline & Meilensteine',
     script: 'Route',
     title: 'Der Weg nach Leonida',

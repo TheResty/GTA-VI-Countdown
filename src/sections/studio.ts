@@ -319,7 +319,7 @@ export function studioSection(): HTMLElement {
 
   return bay({
     id: 'studio',
-    index: 1,
+    index: 2,
     eyebrow: 'Startpunkt-Studio',
     script: 'Deine',
     title: 'Zeitrechnung',

@@ -104,7 +104,7 @@ export function timeMachineSection(): HTMLElement {
 
   return bay({
     id: 'zeitmaschine',
-    index: 8,
+    index: 9,
     eyebrow: 'Simulation',
     script: 'Delorean',
     title: 'Zeitmaschine',

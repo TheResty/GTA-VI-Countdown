@@ -226,7 +226,7 @@ export function mirrorSection(): HTMLElement {
 
   return bay({
     id: 'zeitspiegel',
-    index: 2,
+    index: 3,
     eyebrow: 'Zentrales Instrument',
     script: 'Zeit',
     title: 'Zeitspiegel',

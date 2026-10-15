@@ -267,7 +267,7 @@ function visitLog(): HTMLElement {
 export function hqSection(): HTMLElement {
   return bay({
     id: 'hq',
-    index: 7,
+    index: 8,
     eyebrow: 'Gamification',
     script: 'Safehouse',
     title: 'HQ',

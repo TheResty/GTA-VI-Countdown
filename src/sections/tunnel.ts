@@ -206,7 +206,7 @@ export function tunnelSection(): HTMLElement {
   const days = Math.max(0, Math.ceil((RELEASE - clock.now()) / DAY_MS));
   return bay({
     id: 'zeittunnel',
-    index: 3,
+    index: 4,
     eyebrow: '3D · Raum = Zeit',
     script: 'Flug',
     title: 'Zeittunnel',

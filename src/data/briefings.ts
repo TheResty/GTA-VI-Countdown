@@ -42,14 +42,16 @@ export const DAILY: Record<number, Briefing> = {
       `Mitten in den Herbstferien und mitten in der Woche – und GTA VI ist so nah, dass ein einziger Kalendermonat fast reicht. Noch ${plural(c.cal.holidayDays, 'Ferientag', 'Ferientage')} inklusive heute, danach ${school(c)}. ${c.name}, das ist der Plan.`,
   },
   35: {
-    title: 'In den Ferien ist jeder Tag Freitag',
+    title: 'Launch-Trailer-Tag',
     text: (c) =>
-      `Donnerstag? Egal. Solange Ferien sind, fühlt sich jeder Tag wie Freitag an. Nutze ihn: In elf Tagen klingelt wieder der Wecker. Bis Leonida: ${nights(c)}.`,
+      c.hour < 15
+        ? `Donnerstag in den Ferien – und irgendwas liegt in der Luft. Halte heute Nachmittag dein Handy in der Nähe. Nur so ein Gefühl. Bis Leonida: ${nights(c)}.`
+        : `Um 15 Uhr hat Rockstar ohne jede Vorwarnung den Launch-Trailer rausgehauen: 90 Sekunden, komplett auf der PS5 aufgenommen. Zwischen Trailer 2 und heute lagen 527 Tage – zwischen heute und dem Release nur noch ${nights(c)}. Ab jetzt ist jeder Tag ein News-Tag.`,
   },
   34: {
     title: 'Freitag mit Bonus',
     text: (c) =>
-      `Ein Freitag in den Ferien zählt doppelt. Echte Freitage bis zum Release: ${num(c.cal.fridays)}. Seit ${c.startLabel} sind ${pct(c)} der Wartezeit geschafft – der Rest ist Formsache.`,
+      `Ein Freitag in den Ferien zählt doppelt – und der Launch-Trailer läuft seit gestern in Dauerschleife. Echte Freitage bis zum Release: ${num(c.cal.fridays)}. Seit ${c.startLabel} sind ${pct(c)} der Wartezeit geschafft – der Rest ist Formsache.`,
   },
   33: {
     title: 'Wochenende eins von fünf',

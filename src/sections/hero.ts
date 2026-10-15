@@ -8,6 +8,7 @@ import { emit, on } from '../core/bus';
 import { clock } from '../core/clock';
 import { fmtDate, humanDuration, num, pad, splitDuration, tzLabel } from '../core/format';
 import { sunClick } from '../core/game';
+import { breaking } from '../core/intel';
 import { getStart, progressFrom } from '../core/startpoint';
 import { nextMilestones } from '../core/milestones';
 import { intensityFor, phaseFor } from '../core/phases';
@@ -107,12 +108,18 @@ export function heroSection(): HTMLElement {
     h('span.hero__platforms', CONFIG.release.platforms),
   );
 
+  const eyebrow = h('p.hero__eyebrow', h('span.dot'), h('span.hero__eyebrow-long', 'Command Center · '), 'Leonida · Vice City');
+  const alertText = h('span.hero__alert-text');
+  const alertAgo = h('span.hero__alert-ago');
+  const alert = h('a.hero__eyebrow.hero__alert', { href: '#intel', hidden: true }, h('span.hero__alert-tag', h('span.dot'), 'Eilmeldung'), alertText, alertAgo);
+
   const tickerTrack = h('div.ticker__track');
   const ticker = h('div.ticker', { 'aria-label': 'Live-Ticker' }, h('span.ticker__label', 'Leonida Live'), h('div.ticker__viewport', tickerTrack));
 
   const content = h(
     'div.hero__content.wrap',
-    h('p.hero__eyebrow', h('span.dot'), h('span.hero__eyebrow-long', 'Command Center · '), 'Leonida · Vice City'),
+    eyebrow,
+    alert,
     h(
       'h1.hero__title',
       h('span.hero__script', 'Vice City'),
@@ -219,6 +226,15 @@ export function heroSection(): HTMLElement {
     }
 
     brief.update(now);
+
+    // Eilmeldung aus der Intel-Zentrale
+    const news = breaking(now);
+    alert.hidden = !news;
+    eyebrow.hidden = Boolean(news);
+    if (news) {
+      setText(alertText, news.title);
+      setText(alertAgo, `vor ${humanDuration(now - news.at, 1)}`);
+    }
 
     // Nächster Meilenstein
     const nm = nextMilestones(now, 1)[0];

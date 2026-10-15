@@ -47,9 +47,12 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   { id: 'startpoint', title: 'Eigene Zeitrechnung', description: 'Im Startpunkt-Studio einen eigenen Moment als Startpunkt gesetzt.', group: 'Entdecker', icon: 'target', respect: 15 },
   { id: 'zoom_ms', title: 'Millisekunden-Jäger', description: 'In der Zeitlupe bis auf einzelne Millisekunden hineingezoomt.', group: 'Entdecker', icon: 'eye', respect: 25 },
   { id: 'zoom_flight', title: 'Sturzflug', description: 'Den Auto-Zoom von der ganzen Wartezeit bis ins Jetzt erlebt.', group: 'Entdecker', icon: 'rocket', respect: 15 },
+  { id: 'launch_day', title: 'Launch-Trailer-Tag', description: 'Am Tag des Launch-Trailers im Command Center gewesen.', group: 'Countdown', icon: 'play', respect: 20 },
+  { id: 'intel_reporter', title: 'Reporter', description: 'Eine eigene Meldung in der Intel-Zentrale erfasst.', group: 'Entdecker', icon: 'radar', respect: 15 },
   { id: 'explorer', title: 'Komplett-Scroller', description: 'Bis ganz nach unten gescrollt.', group: 'Entdecker', icon: 'map', respect: 10 },
 
   { id: 'konami', title: '↑↑↓↓←→←→BA', description: 'Den Konami-Code eingegeben.', group: 'Geheim', icon: 'gamepad', respect: 30, secret: true },
   { id: 'sun_clicker', title: 'Sonnenanbeter', description: '7× auf die Sonne über Vice City geklickt.', group: 'Geheim', icon: 'sun', respect: 20, secret: true },
+  { id: 'spoiler_peek', title: 'Neugier siegt', description: 'Einen Leak hinter dem Spoiler-Schutz aufgedeckt.', group: 'Geheim', icon: 'eye', respect: 10, secret: true },
   { id: 'wanted_5', title: 'Meistgesucht', description: 'Fahndungsstufe 5 erreicht.', group: 'Geheim', icon: 'star', respect: 25, secret: true },
 ];

@@ -3,6 +3,8 @@ import { sunTimes } from '../src/core/astro';
 import { calendarCounts, dayType } from '../src/core/calendar';
 import { humanDuration, splitDuration } from '../src/core/format';
 import { FINE_INTERVALS, briefingAt, nextBriefingAt } from '../src/core/intervals';
+import { breaking, feed, isHttpUrl, latestOfficial } from '../src/core/intel';
+import { NEWS } from '../src/data/news';
 import { DAILY } from '../src/data/briefings';
 import { progressFrom } from '../src/core/startpoint';
 import { milestones } from '../src/core/milestones';
@@ -159,5 +161,34 @@ describe('Formatierung', () => {
   it('formatiert deutsch', () => {
     expect(humanDuration(37 * DAY_MS + 9 * HOUR_MS, 2)).toBe('37 Tage, 9 Std.');
     expect(humanDuration(2 * HOUR_MS + 5 * 1000, 3)).toBe('2 Std., 5 Sek.');
+  });
+});
+
+describe('Intel-Feed', () => {
+  const launch = parseLocal('2026-10-15T15:00', TZ);
+
+  it('sortiert neueste Meldungen zuerst und blendet Zukünftiges aus', () => {
+    const items = feed(launch + HOUR_MS);
+    expect(items[0].id).toBe('launch-trailer');
+    for (let i = 1; i < items.length; i++) expect(items[i - 1].at).toBeGreaterThanOrEqual(items[i].at);
+    expect(feed(launch - HOUR_MS).some((n) => n.id === 'launch-trailer')).toBe(false);
+  });
+
+  it('meldet den Launch-Trailer 72 Stunden lang als Eilmeldung', () => {
+    expect(breaking(launch + 2 * HOUR_MS)?.id).toBe('launch-trailer');
+    expect(breaking(launch + 73 * HOUR_MS)).toBeNull();
+    expect(latestOfficial(launch + 73 * HOUR_MS)?.id).toBe('launch-trailer');
+  });
+
+  it('lässt nur http(s)-Links zu', () => {
+    expect(isHttpUrl('https://www.rockstargames.com/VI')).toBe(true);
+    expect(isHttpUrl('javascript:alert(1)')).toBe(false);
+    expect(isHttpUrl('data:text/html,hi')).toBe(false);
+  });
+
+  it('hat für jede Meldung eine eindeutige ID und gültige Quellen', () => {
+    const ids = NEWS.map((n) => n.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    for (const n of NEWS) for (const s of n.sources ?? []) expect(isHttpUrl(s.url)).toBe(true);
   });
 });

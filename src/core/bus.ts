@@ -11,6 +11,7 @@ export interface BusEvents {
   toast: { title: string; text?: string; tone?: 'info' | 'good' | 'alert' | 'gold'; icon?: string };
   'game-changed': void;
   'custom-countdowns': void;
+  intel: void;
   celebrate: { replay: boolean };
   startpoint: StartPoint;
 }

@@ -15,6 +15,7 @@ import './styles/hero.css';
 import './styles/modules.css';
 import './styles/overlays.css';
 import './styles/studio.css';
+import './styles/intel.css';
 import './styles/phases.css';
 
 import { emit, on } from './core/bus';
@@ -31,6 +32,7 @@ import { initSettings } from './overlays/settings';
 import { footer } from './sections/footer';
 import { heroSection } from './sections/hero';
 import { hqSection } from './sections/hq';
+import { intelSection } from './sections/intel';
 import { hud } from './sections/hud';
 import { mirrorSection } from './sections/mirror';
 import { personalSection } from './sections/personal';
@@ -59,6 +61,7 @@ function boot(): void {
     h(
       'main#main',
       heroSection(),
+      intelSection(),
       studioSection(),
       mirrorSection(),
       tunnelSection(),

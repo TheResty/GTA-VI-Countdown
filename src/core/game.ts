@@ -155,6 +155,7 @@ export function evaluateAchievements(): void {
   if (p.hour >= 5 && p.hour < 7) unlock('early_bird');
   if (p.weekday === 0 || p.weekday === 6) unlock('weekend');
   if (holidayOf(today)) unlock('holiday');
+  if (today.y === 2026 && today.m === 10 && today.d === 15) unlock('launch_day');
   const minute = p.hour * 60 + p.minute;
   if (cal.isSchoolDayToday && minute >= 8 * 60 && minute < 13 * 60 + 15 && now < RELEASE) unlock('under_the_desk');
   const autumnEnd = HOLIDAYS.find((h) => h.name.toLowerCase().includes('herbst'))?.end;
