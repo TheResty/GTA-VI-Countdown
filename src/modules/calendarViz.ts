@@ -1,18 +1,13 @@
 /**
- * Kalender-Visualisierungen: Countdown-Kalender, Wartejahre in Wochen,
- * Zeitspirale und Stundenbudget.
+ * Kalender-Visualisierungen: Countdown-Kalender und Wartejahre in Wochen.
  */
-import { CONFIG } from '../config';
 import { DAY_TYPE_LABEL, DayType, dayType, holidayOf } from '../core/calendar';
-import { clock } from '../core/clock';
 import { fmtDate, num, plural } from '../core/format';
-import { onSettings, settings } from '../core/settings';
-import { ANCHORS, EXAMS_END, LAST_WAIT_DAY, RELEASE, RELEASE_CIVIL, TZ } from '../core/timeline';
+import { ANCHORS, EXAMS_END, RELEASE, RELEASE_CIVIL, TZ } from '../core/timeline';
 import {
   CivilDate,
   DAY_MS,
   HOUR_MS,
-  civilAddDays,
   civilCompare,
   civilDiff,
   civilEquals,
@@ -21,10 +16,8 @@ import {
   civilWeekday,
   parseLocal,
   startOfCivilDay,
-  zonedParts,
 } from '../core/tz';
 import { HISTORY } from '../data/history';
-import { hourKind } from '../core/schedule';
 import { h, s } from '../ui/dom';
 import { panel, registerModule } from '../ui/panel';
 import { bindTip, hideTip, showTip } from '../ui/tooltip';
@@ -220,81 +213,3 @@ export function waitWeeks(): HTMLElement {
   });
   return el;
 }
-
-/* ------------------------------------------------------------------ */
-/* T-08 Stundenbudget                                                  */
-/* ------------------------------------------------------------------ */
-
-export function hourBudget(): HTMLElement {
-  const grid = h('div.hours');
-  const totals = { sleep: h('b'), school: h('b'), free: h('b') };
-  const summary = h(
-    'ul.legend.legend--row',
-    h('li', h('span.legend__swatch', { style: { background: '#9b6bff' } }), 'Schlaf ', totals.sleep),
-    h('li', h('span.legend__swatch', { style: { background: '#19f0ff' } }), 'Schule ', totals.school),
-    h('li', h('span.legend__swatch', { style: { background: '#ff2e97' } }), 'Freizeit ', totals.free),
-  );
-
-  const kindAt = hourKind;
-
-  let builtKey = '';
-  const build = (now: number) => {
-    const p = zonedParts(now, TZ);
-    const key = `${p.y}-${p.m}-${p.d}-${p.hour}-${settings().sleepHours}`;
-    if (key === builtKey) return;
-    builtKey = key;
-    const today = { y: p.y, m: p.m, d: p.d };
-    const rows: HTMLElement[] = [];
-    const sum = { sleep: 0, school: 0, free: 0 };
-    if (RELEASE > now) {
-      let c = today;
-      while (civilCompare(c, LAST_WAIT_DAY) <= 0) {
-        const cells: HTMLElement[] = [];
-        for (let hr = 0; hr < 24; hr++) {
-          const isPast = civilEquals(c, today) && hr < p.hour;
-          const isNow = civilEquals(c, today) && hr === p.hour;
-          const k = kindAt(c, hr);
-          if (!isPast) sum[k] += isNow ? (60 - p.minute) / 60 : 1;
-          cells.push(h(`span.hour.k-${isPast ? 'past' : k}${isNow ? '.is-now' : ''}`));
-        }
-        const wd = WD_SHORT[(civilWeekday(c) + 6) % 7];
-        rows.push(h('div.hours__row', { dataset: { day: civilKey(c) } }, h('span.hours__label', `${wd} ${c.d}.${c.m}.`), h('div.hours__cells', cells)));
-        c = civilAddDays(c, 1);
-      }
-    }
-    grid.replaceChildren(
-      h('div.hours__row.hours__axis', h('span.hours__label'), h('div.hours__cells', [0, 6, 12, 18].map((x) => h('span', { style: { gridColumn: `${x + 1} / span 6` } }, `${String(x).padStart(2, '0')}`)))),
-      ...rows,
-    );
-    totals.sleep.textContent = `${num(sum.sleep, 0)} Std.`;
-    totals.school.textContent = `${num(sum.school, 0)} Std.`;
-    totals.free.textContent = `${num(sum.free, 0)} Std.`;
-  };
-
-  grid.addEventListener('pointermove', (e) => {
-    const t = e.target as HTMLElement;
-    if (!t.classList.contains('hour')) return hideTip();
-    const row = t.closest<HTMLElement>('.hours__row');
-    const idx = Array.from(t.parentElement!.children).indexOf(t);
-    const kind = t.className.match(/k-(\w+)/)?.[1] ?? '';
-    const label = { sleep: 'Schlaf', school: 'Schule', free: 'Freizeit', past: 'vorbei' }[kind] ?? '';
-    showTip(e.clientX, e.clientY, `${row?.dataset.day?.split('-').reverse().join('.')} · ${String(idx).padStart(2, '0')}:00–${String(idx + 1).padStart(2, '0')}:00`, [label]);
-  });
-  grid.addEventListener('pointerleave', hideTip);
-
-  const el = panel({
-    id: 'stundenbudget',
-    code: 'T-08',
-    title: 'Stundenbudget',
-    kicker: 'Jede verbleibende Stunde als Kästchen – eingeteilt in Schlaf, Schule und Freizeit.',
-    tone: 'violet',
-    span: 2,
-    tall: true,
-    body: h('div', summary, h('div.hours-scroll', grid)),
-    note: `Annahmen: Schlaf ab ${CONFIG.assumptions.bedtime} Uhr (Dauer laut Einstellungen), Unterricht an Schultagen ${CONFIG.school.dayStart}–${CONFIG.school.dayEnd} Uhr.`,
-  });
-  registerModule({ el, second: build, refresh: (now) => ((builtKey = ''), build(now)) });
-  onSettings(() => ((builtKey = ''), build(clock.now())));
-  return el;
-}
-

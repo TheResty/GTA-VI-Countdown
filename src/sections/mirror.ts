@@ -8,7 +8,7 @@ import { countDaysBetween } from '../core/calendar';
 import { getStart } from '../core/startpoint';
 import { on } from '../core/bus';
 import { clock } from '../core/clock';
-import { fmtDate, fmtDateTime, humanDuration, longDuration, num, pad } from '../core/format';
+import { dative, fmtDate, fmtDateTime, humanDuration, longDuration, num, pad } from '../core/format';
 import { unlock } from '../core/game';
 import { settings } from '../core/settings';
 import { ANCHORS, EXAMS_END, PRELOAD, RELEASE, TZ } from '../core/timeline';
@@ -202,7 +202,7 @@ export function mirrorSection(): HTMLElement {
         return h(
           'li.pair',
           h('span.pair__label', label),
-          h('span.pair__ago', `vor ${longDuration(ago)}`),
+          h('span.pair__ago', `vor ${dative(longDuration(ago))}`),
           h('span.pair__arrow', { 'aria-hidden': 'true' }, '⟷'),
           h('span.pair__mirror', fmtDate(mirrored, 'dateLong')),
           h('span.pair__note', mirrored > RELEASE ? `${num((mirrored - RELEASE) / DAY_MS, 0)} Tage nach dem Release` : `${num((RELEASE - mirrored) / DAY_MS, 0)} Tage vor dem Release`),

@@ -5,7 +5,7 @@
 import { CONFIG } from '../config';
 import { emit, on } from '../core/bus';
 import { clock } from '../core/clock';
-import { fmtDate, fmtDateTime, fmtDstChange, humanDuration, num, pad, relative, splitDuration } from '../core/format';
+import { dative, fmtDate, fmtDateTime, fmtDstChange, humanDuration, num, pad, relative, splitDuration } from '../core/format';
 import { getProfile, unlock } from '../core/game';
 import { MILESTONE_KIND_LABEL, Milestone, MilestoneKind, milestones } from '../core/milestones';
 import { getStart } from '../core/startpoint';
@@ -465,7 +465,7 @@ function countdownWall(): HTMLElement {
         setText(
           c.sub,
           diff <= 0
-            ? `vor ${humanDuration(-diff, 2)}`
+            ? `vor ${dative(humanDuration(-diff, 2))}`
             : c.id === 'release'
               ? 'Das Hauptziel.'
               : Math.abs(relToRelease) < 60_000

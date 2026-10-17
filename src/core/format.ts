@@ -144,10 +144,15 @@ export function plural(n: number, one: string, many: string): string {
   return `${num(n)} ${n === 1 ? one : many}`;
 }
 
+/** Dativ nach „in“/„vor“: „3 Tage“ → „3 Tagen“, „2 Jahre“ → „2 Jahren“ */
+export function dative(txt: string): string {
+  return txt.replace(/(\d) (Tage|Jahre|Monate)\b/g, '$1 $2n');
+}
+
 /** Relativ: „in 3 Tagen“ / „vor 2 Std.“ */
 export function relative(target: number, now: number): string {
   const diff = target - now;
-  const txt = humanDuration(Math.abs(diff), 2);
+  const txt = dative(humanDuration(Math.abs(diff), 2));
   return diff >= 0 ? `in ${txt}` : `vor ${txt}`;
 }
 

@@ -5,7 +5,7 @@
 import { CONFIG } from '../config';
 import { DAY_TYPE_LABEL, dayType } from '../core/calendar';
 import { clock } from '../core/clock';
-import { fmtDate, fmtDstChange, humanDuration, num, plural } from '../core/format';
+import { dative, fmtDate, fmtDstChange, humanDuration, num, plural } from '../core/format';
 import { unlock } from '../core/game';
 import { HOUR_KIND_COLOR, HOUR_KIND_LABEL, HourKind, hourKind } from '../core/schedule';
 import { onSettings, settings } from '../core/settings';
@@ -113,7 +113,7 @@ export function tunnelSection(): HTMLElement {
     for (const d of DST_CHANGES) if (d.at >= info.start && d.at < info.end) events.push(`Zeitumstellung (${fmtDstChange(d.at, d.before, d.after)})`);
     if (PRELOAD >= info.start && PRELOAD < info.end) events.push('Preload-Start');
     const now = clock.now();
-    const rel = info.start > now ? `in ${humanDuration(info.start - now, 2)}` : info.end > now ? 'heute' : 'vorbei';
+    const rel = info.start > now ? `in ${dative(humanDuration(info.start - now, 2))}` : info.end > now ? 'heute' : 'vorbei';
     detail.replaceChildren(
       h('button.tunnel__detail-close', { type: 'button', 'aria-label': 'Schließen', onclick: () => (detail.hidden = true) }, icon('close', 16)),
       h('span.tunnel__detail-kind', { style: { '--c': TYPE_COLOR[t] } }, DAY_TYPE_LABEL[t]),

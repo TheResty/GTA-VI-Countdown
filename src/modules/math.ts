@@ -79,6 +79,7 @@ export function numberSystems(): HTMLElement {
     title: 'Zahlensysteme',
     kicker: 'Die verbleibenden Sekunden, übersetzt für Computer, Römer und Physiker.',
     tone: 'mint',
+    span: 4,
     body: h(
       'dl.numsys',
       h('div', h('dt', 'Binär'), h('dd', rows.bin)),

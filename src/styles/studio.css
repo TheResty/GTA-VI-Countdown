@@ -445,7 +445,10 @@
   display: block;
   flex: 1 1 0;
   width: 100%;
-  min-height: 300px;
+  min-height: 340px;
+  cursor: pointer;
+  transition: transform 0.35s ease-out;
+  will-change: transform;
 }
 
 .wd-clock {

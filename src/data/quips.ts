@@ -19,7 +19,7 @@ export function tickerItems(now: number): string[] {
 
   // Echte Meldungen der letzten zwei Wochen zuerst
   for (const n of feed(now).filter((x) => now - x.at < 14 * DAY_MS).slice(0, 4)) {
-    const tag = n.own ? 'DEINE MELDUNG' : n.kind === 'leak' ? 'LEAK-RADAR' : n.kind === 'trailer' ? 'EILMELDUNG' : 'INTEL';
+    const tag = n.kind === 'leak' ? 'LEAK-RADAR' : n.kind === 'trailer' ? 'EILMELDUNG' : 'INTEL';
     items.push(`${tag}: ${n.title}${n.kind === 'leak' ? ' (unbestätigt)' : ''} – ${relative(n.at, now)}.`);
   }
 

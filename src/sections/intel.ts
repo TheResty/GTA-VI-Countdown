@@ -1,44 +1,24 @@
 /**
- * Bay 01 – Intel-Zentrale: Eilmeldung, Trailer-Rhythmus, kommende Termine,
- * News-Feed mit Spoiler-Schutz für Leaks, Newsflut-Barometer und eigene Meldungen.
+ * Bay 01 – Intel-Zentrale: kompakte Lage zu GTA VI.
+ * Top-Meldung, Termine mit Live-Countdown, Trailer-Rhythmus und ein einklappbarer
+ * Feed mit Spoiler-Schutz für Leaks.
  */
 import { on } from '../core/bus';
 import { clock } from '../core/clock';
-import { fmtDate, humanDuration, num, pad, plural, relative, splitDuration } from '../core/format';
+import { dative, fmtDate, humanDuration, num, pad, relative, splitDuration } from '../core/format';
 import { unlock } from '../core/game';
-import {
-  BREAKING_MS,
-  FeedItem,
-  NEWS_KIND_COLOR,
-  NEWS_KIND_LABEL,
-  addOwn,
-  breaking,
-  feed,
-  isHttpUrl,
-  lastSeen,
-  latestOfficial,
-  markSeen,
-  removeOwn,
-  setSpoilerShield,
-  spoilerShield,
-  unseenCount,
-} from '../core/intel';
+import { BREAKING_MS, FeedItem, NEWS_KIND_COLOR, NEWS_KIND_LABEL, feed, lastSeen, latestOfficial, markSeen, setSpoilerShield, spoilerShield, unseenCount } from '../core/intel';
 import { ANCHORS, RELEASE, TZ } from '../core/timeline';
-import { DAY_MS, civilAddDays, civilCompare, civilDiff, civilFromMs, civilWeekday, parseLocal, startOfCivilDay } from '../core/tz';
-import { NEWS_UPDATED, NewsKind, UPCOMING } from '../data/news';
+import { civilDiff, civilFromMs, civilWeekday, parseLocal } from '../core/tz';
+import { NEWS_UPDATED, UPCOMING } from '../data/news';
 import { bay } from '../ui/bay';
 import { h, setText, watchVisibility } from '../ui/dom';
 import { icon } from '../ui/icons';
 import { registerModule } from '../ui/panel';
-import { bindTip } from '../ui/tooltip';
 
 const WD = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
-type Filter = 'all' | 'official' | 'leak' | 'own';
-
-const dayKey = (ms: number) => {
-  const c = civilFromMs(ms, TZ);
-  return `${c.y}-${c.m}-${c.d}`;
-};
+const COLLAPSED = 4;
+type Filter = 'all' | 'official' | 'leak';
 
 /** Nav-Badge „Intel“ mit Zahl ungelesener Meldungen */
 function updateNavBadge(now: number): void {
@@ -49,83 +29,73 @@ function updateNavBadge(now: number): void {
   });
 }
 
+const sourceLinks = (n: FeedItem) =>
+  n.sources.flatMap((s, i) => [i ? ' · ' : '', h('a', { href: s.url, target: '_blank', rel: 'noopener noreferrer nofollow' }, s.label)]);
+
 export function intelSection(): HTMLElement {
-  /* Eilmeldung ------------------------------------------------------ */
-  const bLive = h('span.intel__live', h('span.dot'), 'Eilmeldung');
-  const bKind = h('span.intel__kind');
-  const bWhen = h('time.intel__when-top');
+  /* Top-Meldung ------------------------------------------------------- */
+  const bTag = h('span.intel__live');
+  const bWhen = h('time.intel__when');
   const bTitle = h('h3.intel__title');
   const bAgo = h('p.intel__ago');
   const bText = h('p.intel__lead');
   const bFacts = h('ul.intel__facts');
   const bSrc = h('p.intel__src');
-  const bCta = h('a.btn.btn--pink', { href: 'https://www.rockstargames.com/VI', target: '_blank', rel: 'noopener noreferrer' }, icon('play', 18), 'Bei Rockstar ansehen');
-  const breakingCard = h('section.intel__breaking', h('header.intel__bhead', bLive, bKind, bWhen), bTitle, bAgo, bText, bFacts, h('div.intel__cta', bCta, bSrc));
+  const bCta = h('a.btn.btn--pink.intel__cta', { href: 'https://www.rockstargames.com/VI', target: '_blank', rel: 'noopener noreferrer' }, icon('play', 16), 'Ansehen');
+  const top = h('section.intel__top', h('header.intel__bhead', bTag, bWhen), bTitle, bAgo, bText, bFacts, h('footer.intel__bfoot', bCta, bSrc));
 
-  /* Trailer-Rhythmus ------------------------------------------------- */
-  const trailers = [
-    { label: 'Trailer 1', at: ANCHORS.trailer1 },
-    { label: 'Trailer 2', at: ANCHORS.trailer2 },
-    { label: 'Launch-Trailer', at: ANCHORS.launchTrailer },
-    { label: 'Release', at: RELEASE },
-  ];
-  const gaps = trailers.slice(1).map((t, i) => ({ from: trailers[i], to: t, ms: t.at - trailers[i].at, days: civilDiff(civilFromMs(trailers[i].at, TZ), civilFromMs(t.at, TZ)) }));
-  const maxGap = Math.max(...gaps.map((g) => g.ms));
-  const gapLeft = h('span');
-  const rhythm = h(
-    'section.intel__card.intel__rhythm',
-    h('h4.intel__h', icon('play', 16), 'Trailer-Rhythmus'),
-    h(
-      'ol.rhythm',
-      gaps.map((g, i) => {
-        const last = i === gaps.length - 1;
-        const fill = h('span.rhythm__fill', { style: { width: `${(g.ms / maxGap) * 100}%` } });
-        return h(
-          `li.rhythm__row${last ? '.is-last' : ''}`,
-          h('span.rhythm__label', `${g.from.label} → ${g.to.label}`),
-          h('span.rhythm__track', fill),
-          h('b.rhythm__val', last ? humanDuration(g.ms, 2) : `${num(g.days)} Tage`),
-        );
-      }),
-    ),
-    h(
-      'p.intel__caption',
-      `Zwischen den großen Trailern lagen fast exakt gleich viele Tage – ${num(gaps[0].days)} und ${num(gaps[1].days)}. Vom Launch-Trailer bis zum Release sind es nur ${gaps[2].days % 7 === 0 ? `genau ${['null', 'eine', 'zwei', 'drei', 'vier', 'fünf', 'sechs'][gaps[2].days / 7] ?? num(gaps[2].days / 7)} Wochen` : `${num(gaps[2].days)} Tage`}. `,
-      gapLeft,
-    ),
-  );
-
-  /* Demnächst -------------------------------------------------------- */
+  /* Termine ----------------------------------------------------------- */
   const upItems = UPCOMING.map((u) => ({ ...u, ms: parseLocal(u.at, TZ), count: h('b.up__count') }));
   const upcoming = h(
-    'section.intel__card.intel__up',
-    h('h4.intel__h', icon('calendar', 16), 'Demnächst'),
+    'section.intel__box',
+    h('h4.intel__h', icon('calendar', 14), 'Termine'),
     h(
       'ul.up',
       upItems.map((u) =>
-        h(
-          'li.up__item',
-          h('div.up__date', h('b', fmtDate(u.ms, 'dateShort')), h('small', `${fmtDate(u.ms, 'time')} Uhr`)),
-          h('div.up__body', h('span.up__title', u.title), h('small', u.note)),
-          u.count,
-        ),
+        h('li.up__item', { title: `${u.title} – ${u.note}` }, h('span.up__date', fmtDate(u.ms, 'dateShort'), h('span.up__time', ` · ${fmtDate(u.ms, 'time')}`)), h('span.up__title', u.title), u.count),
       ),
     ),
   );
 
+  /* Trailer-Rhythmus -------------------------------------------------- */
+  const marks = [
+    { label: 'Trailer 1', at: ANCHORS.trailer1 },
+    { label: 'Trailer 2', at: ANCHORS.trailer2 },
+    { label: 'Launch', at: ANCHORS.launchTrailer },
+    { label: 'Release', at: RELEASE },
+  ];
+  const gaps = marks.slice(1).map((m, i) => ({ label: `${marks[i].label} → ${m.label}`, days: civilDiff(civilFromMs(marks[i].at, TZ), civilFromMs(m.at, TZ)) }));
+  const maxDays = Math.max(...gaps.map((g) => g.days));
+  const rhythm = h(
+    'section.intel__box',
+    h('h4.intel__h', icon('play', 14), 'Trailer-Rhythmus'),
+    h(
+      'ol.rhythm',
+      gaps.map((g, i) =>
+        h(
+          `li.rhythm__row${i === gaps.length - 1 ? '.is-last' : ''}`,
+          h('span.rhythm__label', g.label),
+          h('span.rhythm__track', h('span.rhythm__fill', { style: { width: `${Math.max(2, (g.days / maxDays) * 100)}%` } })),
+          h('b.rhythm__val', `${num(g.days)} T`),
+        ),
+      ),
+    ),
+    h('p.intel__caption', `Fast derselbe Abstand zwischen den Trailern – und vom Launch-Trailer bis zum Release genau ${gaps[2].days % 7 === 0 ? `${gaps[2].days / 7} Wochen` : `${gaps[2].days} Tage`}.`),
+  );
+
   /* Feed ------------------------------------------------------------- */
   let filter: Filter = 'all';
+  let expanded = false;
   const revealed = new Set<string>();
   const sessionSeen = lastSeen();
   const seg = h(
-    'div.seg.seg--small',
+    'div.seg.seg--small.intel__seg',
     { role: 'tablist', 'aria-label': 'Meldungen filtern' },
     (
       [
         ['all', 'Alle'],
         ['official', 'Offiziell'],
         ['leak', 'Leaks'],
-        ['own', 'Eigene'],
       ] as [Filter, string][]
     ).map(([k, l]) =>
       h(
@@ -145,31 +115,32 @@ export function intelSection(): HTMLElement {
       ),
     ),
   );
-  const shieldBtn = h<HTMLButtonElement>('button.chip-btn.intel__shield', { type: 'button' });
+  const shieldBtn = h<HTMLButtonElement>('button.intel__shield', { type: 'button' });
   shieldBtn.addEventListener('click', () => setSpoilerShield(!spoilerShield()));
-  const pulse = h('div.pulse', { role: 'img' });
-  const pulseStats = h('p.pulse__stats');
   const list = h('ol.intel__feed');
-  const feedWrap = h(
-    'section.intel__card.intel__feedwrap',
-    h('header.intel__feedhead', h('h4.intel__h', icon('radar', 16), 'Meldungen'), h('div.intel__tools', seg, shieldBtn)),
-    h('div.pulse__wrap', h('span.pulse__label', 'Newsflut-Barometer'), pulse, pulseStats),
+  const moreBtn = h<HTMLButtonElement>('button.intel__more', { type: 'button' });
+  moreBtn.addEventListener('click', () => {
+    expanded = !expanded;
+    renderFeed(clock.now());
+  });
+  const updated = parseLocal(NEWS_UPDATED, TZ);
+  const feedBox = h(
+    'section.intel__feedbox',
+    h('header.intel__feedhead', h('h4.intel__h', icon('radar', 14), 'Meldungen'), h('div.intel__tools', seg, shieldBtn)),
     list,
-    h(
-      'p.intel__note',
-      `Kuratiert bis ${fmtDate(parseLocal(NEWS_UPDATED, TZ), 'date')}, ${fmtDate(parseLocal(NEWS_UPDATED, TZ), 'time')} Uhr. Leaks sind unbestätigt – angebliche „Build-Downloads“ sind laut Berichten oft Schadsoftware. Finger weg.`,
-    ),
+    moreBtn,
+    h('p.intel__note', `Stand ${fmtDate(updated, 'dateShort')}, ${fmtDate(updated, 'time')} Uhr · Leaks sind unbestätigt – angebliche „Build-Downloads“ sind oft Schadsoftware.`),
   );
 
   function itemEl(n: FeedItem, now: number): HTMLElement {
-    const hidden = n.spoiler && spoilerShield() && !revealed.has(n.id);
-    const isNew = !n.own && n.at > sessionSeen;
     const c = civilFromMs(n.at, TZ);
-    const body = h('div.intel__text', h('p', n.text));
-    const textBox = hidden
+    const hidden = n.spoiler && spoilerShield() && !revealed.has(n.id);
+    const isNew = n.at > sessionSeen;
+    const text = h('p.intel__text', n.text);
+    const body = hidden
       ? h(
           'div.intel__spoiler',
-          body,
+          text,
           h(
             'button.intel__reveal',
             {
@@ -180,206 +151,77 @@ export function intelSection(): HTMLElement {
                 renderFeed(clock.now());
               },
             },
-            icon('eye', 16),
+            icon('eye', 14),
             'Spoiler aufdecken',
           ),
         )
-      : body;
-    return h(
-      `li.intel__item.kind-${n.kind}${isNew ? '.is-new' : ''}${n.own ? '.is-own' : ''}`,
-      { style: { '--c': n.own ? '#ff2e97' : NEWS_KIND_COLOR[n.kind] } },
+      : text;
+    const det = h<HTMLDetailsElement>(
+      'details.intel__item',
+      { style: { '--c': NEWS_KIND_COLOR[n.kind] } },
       h(
-        'div.intel__date',
-        h('b', `${c.d}.${c.m}.`),
-        h('small', WD[civilWeekday(c)]),
-        n.timed ? h('small', fmtDate(n.at, 'time')) : n.approx ? h('small', { title: 'Datum ungefähr' }, 'ca.') : null,
+        'summary.intel__sum',
+        h('span.intel__d', h('b', `${c.d}.${c.m}.`), h('small', n.approx ? `${WD[civilWeekday(c)]} · ca.` : n.timed ? `${WD[civilWeekday(c)]} ${fmtDate(n.at, 'time')}` : WD[civilWeekday(c)])),
+        h('span.intel__st', h('span.intel__meta', h('span.intel__chip', NEWS_KIND_LABEL[n.kind]), isNew ? h('span.intel__new', 'Neu') : null, h('span.intel__rel', relative(n.at, now))), h('span.intel__ititle', n.title)),
+        icon('plus', 14, 'icon intel__chev'),
       ),
-      h(
-        'div.intel__ibody',
-        h(
-          'div.intel__meta',
-          h('span.intel__chip', n.own ? `Eigene · ${NEWS_KIND_LABEL[n.kind]}` : NEWS_KIND_LABEL[n.kind]),
-          isNew ? h('span.intel__new', 'Neu') : null,
-          h('span.intel__rel', relative(n.at, now)),
-        ),
-        h('h5.intel__ititle', n.title),
-        n.text ? textBox : null,
-        n.facts.length ? h('ul.intel__facts.intel__facts--small', n.facts.map((f) => h('li', f))) : null,
-        n.sources.length
-          ? h(
-              'p.intel__src',
-              n.own ? null : 'Quellen: ',
-              ...n.sources.flatMap((s, i) => [i ? ' · ' : '', h('a', { href: s.url, target: '_blank', rel: 'noopener noreferrer nofollow' }, s.label)]),
-            )
-          : null,
-        n.own
-          ? h(
-              'button.intel__del',
-              { type: 'button', 'aria-label': `Meldung „${n.title}“ löschen`, onclick: () => removeOwn(n.id) },
-              icon('trash', 14),
-              'Löschen',
-            )
-          : null,
-      ),
+      h('div.intel__body', body, n.sources.length ? h('p.intel__src', 'Quellen: ', ...sourceLinks(n)) : null),
     );
+    if (openIds.has(n.id)) det.open = true;
+    det.addEventListener('toggle', () => (det.open ? openIds.add(n.id) : openIds.delete(n.id)));
+    return det;
   }
+  const openIds = new Set<string>();
 
   function renderFeed(now: number) {
-    const all = feed(now);
-    const items = all.filter((n) =>
-      filter === 'all' ? true : filter === 'official' ? !n.own && (n.kind === 'official' || n.kind === 'trailer') : filter === 'leak' ? n.kind === 'leak' : n.own,
+    const topId = latestOfficial(now)?.id;
+    const items = feed(now).filter(
+      (n) => n.id !== topId && (filter === 'all' || (filter === 'leak' ? n.kind === 'leak' : n.kind !== 'leak')),
     );
-    list.replaceChildren(
-      ...(items.length
-        ? items.map((n) => itemEl(n, now))
-        : [h('li.intel__empty', filter === 'own' ? 'Noch keine eigenen Meldungen. Unten kannst du die erste erfassen.' : 'Keine Meldungen in dieser Ansicht.')]),
-    );
+    const shown = expanded ? items : items.slice(0, COLLAPSED);
+    list.replaceChildren(...(shown.length ? shown.map((n) => h('li', itemEl(n, now))) : [h('li.intel__empty', 'Keine Meldungen in dieser Ansicht.')]));
+    moreBtn.hidden = items.length <= COLLAPSED;
+    moreBtn.replaceChildren(icon(expanded ? 'close' : 'plus', 14), expanded ? 'Weniger anzeigen' : `Alle ${items.length} Meldungen`);
     shieldBtn.setAttribute('aria-pressed', String(spoilerShield()));
-    shieldBtn.replaceChildren(icon(spoilerShield() ? 'lock' : 'eye', 14), spoilerShield() ? 'Spoiler-Schutz an' : 'Spoiler-Schutz aus');
-    renderPulse(now, all);
+    shieldBtn.setAttribute('aria-label', spoilerShield() ? 'Spoiler-Schutz ist an – ausschalten' : 'Spoiler-Schutz ist aus – einschalten');
+    shieldBtn.title = shieldBtn.getAttribute('aria-label') ?? '';
+    shieldBtn.replaceChildren(icon(spoilerShield() ? 'lock' : 'eye', 14), h('span', spoilerShield() ? 'Spoiler-Schutz' : 'Spoiler sichtbar'));
   }
 
-  /* Newsflut-Barometer: jeder Tag seit August bis zum Release */
-  const pulseStart = { y: 2026, m: 8, d: 1 };
-  function renderPulse(now: number, all: FeedItem[]) {
-    const counts = new Map<string, FeedItem[]>();
-    for (const n of all) {
-      const k = dayKey(n.at);
-      counts.set(k, [...(counts.get(k) ?? []), n]);
-    }
-    const today = civilFromMs(now, TZ);
-    const releaseDay = civilFromMs(RELEASE, TZ);
-    const cells: HTMLElement[] = [];
-    let newsDays = 0;
-    let streak = 0;
-    let streakOpen = true;
-    for (let c = today; civilCompare(c, pulseStart) >= 0 && streakOpen; c = civilAddDays(c, -1)) {
-      if (counts.has(`${c.y}-${c.m}-${c.d}`)) streak++;
-      else if (civilCompare(c, today) < 0) streakOpen = false;
-    }
-    for (let c = pulseStart; civilCompare(c, releaseDay) <= 0; c = civilAddDays(c, 1)) {
-      const k = `${c.y}-${c.m}-${c.d}`;
-      const items = counts.get(k) ?? [];
-      const cmp = civilCompare(c, today);
-      if (items.length) newsDays++;
-      const level = Math.min(3, items.length);
-      const isRelease = civilCompare(c, releaseDay) === 0;
-      const cell = h(`span.pulse__cell.l${level}${cmp === 0 ? '.is-today' : cmp > 0 ? '.is-future' : ''}${isRelease ? '.is-release' : ''}${c.d === 1 ? '.is-month' : ''}`, {
-        style: items.length ? { '--c': items.some((i) => i.kind === 'trailer') ? '#19f0ff' : items.some((i) => i.kind === 'leak') ? '#9b6bff' : '#ffd23f' } : {},
-      });
-      bindTip(cell, () => ({
-        title: `${WD[civilWeekday(c)]} ${c.d}.${c.m}.${isRelease ? ' · Release' : ''}`,
-        lines: items.length ? items.map((i) => `${i.own ? 'Eigene: ' : ''}${i.title}`) : [cmp > 0 ? 'Noch offen' : 'Keine Meldung'],
-      }));
-      cells.push(cell);
-    }
-    pulse.replaceChildren(...cells);
-    pulse.setAttribute('aria-label', `Meldungen pro Tag seit 1. August: ${newsDays} Tage mit Meldungen`);
-    const daysLeft = Math.max(0, Math.round((startOfCivilDay(releaseDay, TZ) - startOfCivilDay(today, TZ)) / DAY_MS));
-    setText(
-      pulseStats,
-      `${plural(all.filter((n) => n.at >= startOfCivilDay(pulseStart, TZ)).length, 'Meldung', 'Meldungen')} an ${plural(newsDays, 'Tag', 'Tagen')} · ${streak > 1 ? `Serie: ${streak} Tage am Stück` : streak === 1 ? 'Heute gab es News' : 'Heute noch nichts – trag es selbst ein'} · noch ${plural(daysLeft, 'Tag', 'Tage')} zu füllen`,
-    );
-  }
-
-  /* Eigene Meldung ---------------------------------------------------- */
-  const fTitle = h<HTMLInputElement>('input.input#intel-f-title', { type: 'text', maxLength: 120, required: true, placeholder: 'z. B. Neue Screenshots auf der Website' });
-  const fKind = h<HTMLSelectElement>(
-    'select.input#intel-f-kind',
-    (Object.keys(NEWS_KIND_LABEL) as NewsKind[]).map((k) => h('option', { value: k }, NEWS_KIND_LABEL[k])),
-  );
-  fKind.value = 'official';
-  const fAt = h<HTMLInputElement>('input.input#intel-f-at', { type: 'datetime-local' });
-  const fUrl = h<HTMLInputElement>('input.input#intel-f-url', { type: 'url', placeholder: 'https://…', maxLength: 400 });
-  const fText = h<HTMLTextAreaElement>('textarea.input#intel-f-text', { rows: 3, maxLength: 400, placeholder: 'Was genau ist passiert? (optional)' });
-  const fErr = h('p.form-error', { hidden: true });
-  const toLocalInput = (ms: number) => {
-    const p = civilFromMs(ms, TZ);
-    return `${p.y}-${pad(p.m)}-${pad(p.d)}T${fmtDate(ms, 'time')}`;
-  };
-  const form = h<HTMLFormElement>(
-    'form.intel__form',
-    h('label.field.intel__f-title', h('span', 'Schlagzeile'), fTitle),
-    h('label.field', h('span', 'Art'), fKind),
-    h('label.field', h('span', 'Zeitpunkt (deutsche Zeit)'), fAt),
-    h('label.field.intel__f-url', h('span', 'Link (optional)'), fUrl),
-    h('label.field.intel__f-text', h('span', 'Notiz (optional)'), fText),
-    h('div.intel__f-actions', h('button.btn.btn--pink', { type: 'submit' }, icon('plus', 18), 'Meldung speichern'), fErr),
-  );
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const title = fTitle.value.trim();
-    const url = fUrl.value.trim();
-    const fail = (msg: string) => {
-      fErr.hidden = false;
-      fErr.textContent = msg;
-    };
-    if (!title) return fail('Bitte eine Schlagzeile eintragen.');
-    if (url && !isHttpUrl(url)) return fail('Der Link muss mit http:// oder https:// beginnen.');
-    let at = clock.now();
-    if (fAt.value) {
-      try {
-        at = parseLocal(fAt.value, TZ);
-      } catch {
-        return fail('Der Zeitpunkt konnte nicht gelesen werden.');
-      }
-    }
-    if (at > clock.now() + 60_000) return fail('Meldungen aus der Zukunft gibt es erst nach dem Release.');
-    fErr.hidden = true;
-    addOwn({ at, kind: fKind.value as NewsKind, title, text: fText.value.trim(), url: url || undefined });
-    unlock('intel_reporter');
-    form.reset();
-    fKind.value = 'official';
-    fAt.value = toLocalInput(clock.now());
-    filter = 'all';
-    seg.querySelectorAll<HTMLElement>('button').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.f === 'all')));
-  });
-  fAt.value = toLocalInput(clock.now());
-  const addCard = h(
-    'section.intel__card.intel__add',
-    h('h4.intel__h', icon('plus', 16), 'Eigene Meldung erfassen'),
-    h('p.intel__caption', 'Ab jetzt kommt quasi täglich was Neues. Halte es hier fest – gespeichert nur in deinem Browser, sichtbar im Feed und im Barometer.'),
-    form,
-  );
-
-  const feature = h(
-    'article.feature.feature--intel#mod-intel',
-    h('div.intel__col.intel__col--main', breakingCard, feedWrap),
-    h('div.intel__col.intel__col--side', rhythm, upcoming, addCard),
-  );
-
-  /* Logik ------------------------------------------------------------ */
-  let lastBreakId = '';
-  function renderBreaking(now: number) {
+  /* Top-Meldung aktualisieren --------------------------------------- */
+  let lastTopKey = '';
+  function renderTop(now: number) {
     const n = latestOfficial(now);
     if (!n) return;
     const isBreaking = now - n.at < BREAKING_MS;
-    if (n.id + isBreaking !== lastBreakId) {
-      lastBreakId = n.id + isBreaking;
-      breakingCard.classList.toggle('is-breaking', isBreaking);
-      bLive.replaceChildren(h('span.dot'), isBreaking ? 'Eilmeldung' : 'Letzte offizielle Meldung');
-      setText(bKind, NEWS_KIND_LABEL[n.kind]);
-      setText(bWhen, `${fmtDate(n.at, 'weekdayShort')} ${fmtDate(n.at, 'dateShort')}, ${fmtDate(n.at, 'time')} Uhr`);
+    const key = `${n.id}-${isBreaking}`;
+    if (key !== lastTopKey) {
+      lastTopKey = key;
+      top.classList.toggle('is-breaking', isBreaking);
+      top.style.setProperty('--c', NEWS_KIND_COLOR[n.kind]);
+      bTag.replaceChildren(h('span.dot'), isBreaking ? 'Eilmeldung' : `Zuletzt offiziell · ${NEWS_KIND_LABEL[n.kind]}`);
+      setText(bWhen, `${fmtDate(n.at, 'weekdayShort')} ${fmtDate(n.at, 'dateShort')}${n.timed ? `, ${fmtDate(n.at, 'time')} Uhr` : ''}`);
       setText(bTitle, n.title);
       setText(bText, n.text);
-      bFacts.replaceChildren(...n.facts.map((f) => h('li.chip', f)));
+      bFacts.replaceChildren(...n.facts.map((f) => h('li', f)));
       bFacts.hidden = !n.facts.length;
-      bSrc.replaceChildren('Quellen: ', ...n.sources.flatMap((s, i) => [i ? ' · ' : '', h('a', { href: s.url, target: '_blank', rel: 'noopener noreferrer nofollow' }, s.label)]));
+      bSrc.replaceChildren(...sourceLinks(n));
+      bCta.hidden = n.kind !== 'trailer';
     }
-    const left = RELEASE - n.at;
-    setText(bAgo, `vor ${humanDuration(now - n.at, 3)} · erschienen ${humanDuration(left, 2)} vor dem Release`);
+    setText(bAgo, `vor ${dative(humanDuration(now - n.at, 2))}`);
   }
+
+  const feature = h('article.feature.feature--intel#mod-intel', h('div.intel__head', top, h('div.intel__side', upcoming, rhythm)), feedBox);
 
   let seenTimer = 0;
   watchVisibility(
-    feedWrap,
+    feedBox,
     (v) => {
       window.clearTimeout(seenTimer);
       if (v) seenTimer = window.setTimeout(() => markSeen(clock.now()), 4000);
     },
     '0px',
   );
-
   on('intel', () => {
     renderFeed(clock.now());
     updateNavBadge(clock.now());
@@ -389,7 +231,7 @@ export function intelSection(): HTMLElement {
   registerModule({
     el: feature,
     second(now) {
-      renderBreaking(now);
+      renderTop(now);
       for (const u of upItems) {
         const d = u.ms - now;
         if (d <= 0) setText(u.count, u.id === 'release' ? 'Jetzt!' : 'läuft');
@@ -398,8 +240,6 @@ export function intelSection(): HTMLElement {
           setText(u.count, `${p.days ? `${p.days} T ` : ''}${pad(p.hours)}:${pad(p.minutes)}:${pad(p.seconds)}`);
         }
       }
-      const toRelease = RELEASE - now;
-      setText(gapLeft, toRelease > 0 ? `Davon sind noch ${humanDuration(toRelease, 2)} übrig.` : 'Und jetzt ist es da.');
       const m = Math.floor(now / 60_000);
       if (m !== lastMinute) {
         lastMinute = m;
@@ -408,15 +248,13 @@ export function intelSection(): HTMLElement {
       }
     },
     refresh(now) {
-      lastBreakId = '';
-      renderBreaking(now);
+      lastTopKey = '';
+      renderTop(now);
       renderFeed(now);
     },
   });
-  // Badge auch ohne sichtbare Sektion setzen
   window.setTimeout(() => updateNavBadge(clock.now()), 0);
 
-  const b = breaking(clock.now());
   return bay({
     id: 'intel',
     index: 1,
@@ -424,9 +262,8 @@ export function intelSection(): HTMLElement {
     script: 'Breaking',
     title: 'Intel-Zentrale',
     tone: 'ocean',
-    lead: b
-      ? `${b.title} (${relative(b.at, clock.now())}). Ab jetzt kommt quasi täglich etwas Neues: offizielle Meldungen, Leaks mit Spoiler-Schutz und deine eigenen Einträge, alles an einem Ort.`
-      : 'Offizielle Meldungen, Leaks mit Spoiler-Schutz und deine eigenen Einträge – alles, was bis zum Release über GTA VI bekannt wird, an einem Ort.',
+    compact: true,
+    lead: 'Offizielles, Berichte und Leaks bis zum Release – kompakt und mit Spoiler-Schutz.',
     body: feature,
   });
 }

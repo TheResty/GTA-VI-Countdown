@@ -8,13 +8,15 @@ export interface BayOptions {
   script?: string;
   lead?: Child;
   tone?: 'sunset' | 'ocean' | 'magenta' | 'night' | 'gold';
+  /** Kleinerer Kopf und weniger Abstand */
+  compact?: boolean;
   body: Child;
 }
 
 /** Ein „Bay“ ist ein Abschnitt des Command Centers mit eigenem Kopf und Raster. */
 export function bay(o: BayOptions): HTMLElement {
   return h(
-    `section.bay.bay--${o.tone ?? 'night'}`,
+    `section.bay.bay--${o.tone ?? 'night'}${o.compact ? '.bay--compact' : ''}`,
     { id: o.id, 'aria-labelledby': `${o.id}-title` },
     h(
       'div.wrap',

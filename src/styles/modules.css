@@ -487,89 +487,21 @@
   color: var(--ink-2);
 }
 
-/* T-08 Stundenbudget */
-.hours-scroll {
-  max-height: 400px;
-  overflow: auto;
-  padding-right: 4px;
-}
-
-.hours {
-  display: grid;
-  gap: 3px;
-  min-width: 320px;
-}
-
-.hours__row {
-  display: grid;
-  grid-template-columns: 62px minmax(0, 1fr);
-  align-items: center;
-  gap: 8px;
-}
-
-.hours__label {
-  font: 500 11px/1 var(--font-mono);
-  color: var(--ink-3);
-  white-space: nowrap;
-}
-
-.hours__cells {
-  display: grid;
-  grid-template-columns: repeat(24, minmax(0, 1fr));
-  gap: 2px;
-}
-
-.hours__axis {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  background: var(--surface-solid);
-  padding-bottom: 4px;
-}
-
-.hours__axis .hours__cells span {
-  font: 500 10px/1 var(--font-mono);
-  color: var(--ink-3);
-}
-
-.hour {
-  height: 12px;
-  border-radius: 2px;
-}
-
-.hour.k-sleep {
-  background: rgba(var(--violet-rgb), 0.55);
-}
-
-.hour.k-school {
-  background: rgba(var(--cyan-rgb), 0.75);
-}
-
-.hour.k-free {
-  background: rgba(var(--pink-rgb), 0.7);
-}
-
-.hour.k-past {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.hour.is-now {
-  outline: 2px solid #fff;
-  outline-offset: 0;
-  animation: led 1s ease-in-out infinite;
-}
-
 /* T-09 Zahlensysteme */
 .numsys {
   display: grid;
-  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 10px;
 }
 
 .numsys > div {
   display: grid;
-  gap: 2px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--line);
+  align-content: start;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: rgba(0, 0, 0, 0.2);
 }
 
 .numsys dt {
@@ -624,40 +556,6 @@
   font: 500 14px/1.4 var(--font-mono);
   color: var(--ink-2);
   overflow-wrap: anywhere;
-}
-
-/* T-14 Sonne */
-.daylight {
-  display: grid;
-  gap: 2px;
-  max-height: 200px;
-  overflow: auto;
-}
-
-.daylight__axis {
-  display: flex;
-  justify-content: space-between;
-  font: 500 10px/1 var(--font-mono);
-  color: var(--ink-3);
-  padding-bottom: 4px;
-  position: sticky;
-  top: 0;
-  background: var(--surface-solid);
-}
-
-.daylight__row {
-  position: relative;
-  height: 6px;
-  border-radius: 3px;
-  background: rgba(var(--violet-rgb), 0.18);
-}
-
-.daylight__bar {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  border-radius: 3px;
-  background: linear-gradient(90deg, var(--orange), var(--sun), var(--orange));
 }
 
 /* T-17 Umrechner */

@@ -6,7 +6,7 @@
 import { CONFIG } from '../config';
 import { emit, on } from '../core/bus';
 import { clock } from '../core/clock';
-import { fmtDate, humanDuration, num, pad, splitDuration, tzLabel } from '../core/format';
+import { dative, fmtDate, humanDuration, num, pad, splitDuration, tzLabel } from '../core/format';
 import { sunClick } from '../core/game';
 import { breaking } from '../core/intel';
 import { getStart, progressFrom } from '../core/startpoint';
@@ -233,7 +233,7 @@ export function heroSection(): HTMLElement {
     eyebrow.hidden = Boolean(news);
     if (news) {
       setText(alertText, news.title);
-      setText(alertAgo, `vor ${humanDuration(now - news.at, 1)}`);
+      setText(alertAgo, `vor ${dative(humanDuration(now - news.at, 1))}`);
     }
 
     // Nächster Meilenstein

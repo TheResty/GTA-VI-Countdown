@@ -5,7 +5,7 @@
  */
 import { clock } from '../core/clock';
 import { DAY_TYPE_LABEL, calendarCounts, dayType, holidayOf, isSchoolDay, isWeekend } from '../core/calendar';
-import { humanDuration, num, pad, splitDuration } from '../core/format';
+import { dative, humanDuration, num, pad, splitDuration } from '../core/format';
 import { BRIEFING_DAYS, briefingAt, briefingDate, briefingForDay, nextBriefingAt } from '../core/intervals';
 import { HOLIDAYS, PRELOAD, RELEASE, RELEASE_CIVIL, TZ } from '../core/timeline';
 import { CivilDate, civilAddDays, civilCompare, civilDiff, civilEquals, civilFromMs, civilWeekday } from '../core/tz';
@@ -156,7 +156,7 @@ export function briefingCard(): { el: HTMLElement; update(now: number): void } {
     if (diff > 0) {
       items.push(['moon', `${num(cal.nights)}× schlafen`]);
       items.push(['book', `${num(cal.schoolDaysRemaining)} Schultage`]);
-      items.push(['download', PRELOAD > now ? `Preload in ${humanDuration(PRELOAD - now, 2)}` : 'Preload läuft']);
+      items.push(['download', PRELOAD > now ? `Preload in ${dative(humanDuration(PRELOAD - now, 2))}` : 'Preload läuft']);
     }
     const factKey = items.map((i) => i[1]).join('|');
     if (facts.dataset.key !== factKey) {

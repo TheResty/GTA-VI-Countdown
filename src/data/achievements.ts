@@ -48,7 +48,6 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   { id: 'zoom_ms', title: 'Millisekunden-Jäger', description: 'In der Zeitlupe bis auf einzelne Millisekunden hineingezoomt.', group: 'Entdecker', icon: 'eye', respect: 25 },
   { id: 'zoom_flight', title: 'Sturzflug', description: 'Den Auto-Zoom von der ganzen Wartezeit bis ins Jetzt erlebt.', group: 'Entdecker', icon: 'rocket', respect: 15 },
   { id: 'launch_day', title: 'Launch-Trailer-Tag', description: 'Am Tag des Launch-Trailers im Command Center gewesen.', group: 'Countdown', icon: 'play', respect: 20 },
-  { id: 'intel_reporter', title: 'Reporter', description: 'Eine eigene Meldung in der Intel-Zentrale erfasst.', group: 'Entdecker', icon: 'radar', respect: 15 },
   { id: 'explorer', title: 'Komplett-Scroller', description: 'Bis ganz nach unten gescrollt.', group: 'Entdecker', icon: 'map', respect: 10 },
 
   { id: 'konami', title: '↑↑↓↓←→←→BA', description: 'Den Konami-Code eingegeben.', group: 'Geheim', icon: 'gamepad', respect: 30, secret: true },

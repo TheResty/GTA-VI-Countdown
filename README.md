@@ -40,10 +40,9 @@ Countdown-Wand an. Alles wird nur im Browser gespeichert (localStorage).
   36 Tage (Ferien, Zeitumstellung, Schulstart, Preload, letztes Wochenende …), am letzten Tag stundengenau,
   in den letzten 45 Minuten minutengenau. Vergangene Briefings lassen sich nachlesen, kommende bleiben
   gesperrt – auch in der Zeitmaschine.
-- **Bay 01 – Intel-Zentrale:** Eilmeldung (gerade: der Launch-Trailer vom 15.10.2026), Trailer-Rhythmus,
-  kommende Termine mit Live-Countdown, News-Feed mit Spoiler-Schutz für Leaks, Newsflut-Barometer
-  (Meldungen pro Tag bis zum Release) und eigene Meldungen, die nur im Browser gespeichert werden.
-  Neue Meldungen erscheinen auch als Eilmeldung im Hero, im Live-Ticker und als Zähler in der Navigation.
+- **Bay 01 – Intel-Zentrale (kompakt):** letzte offizielle Meldung bzw. Eilmeldung, Termine mit Live-Countdown,
+  Trailer-Rhythmus und ein einklappbarer Feed (Offiziell / Leaks) mit Spoiler-Schutz. Neue Meldungen erscheinen
+  auch als Eilmeldung im Hero, im Live-Ticker und als Zähler in der Navigation.
 - **Bay 02 – Startpunkt-Studio:** Ab wann wartest du? Trailer 1, GTA V, Verschiebung, Ferienbeginn, erster
   Besuch, Geburtstag oder ein eigener Moment – der gewählte Startpunkt gilt seitenweit (Hero-Fortschritt,
   Prozent-Meilensteine, Zeitspiegel, Maßstäbe, Zeitachse).
@@ -52,18 +51,19 @@ Countdown-Wand an. Alles wird nur im Browser gespeichert (localStorage).
     mitlaufen, der „Sturzflug ins Jetzt“ zoomt automatisch bis in die Millisekunden. Die Anzeige
     „Zeitfluss“ verrät, wie schnell die Zeit gerade über den Bildschirm wandert – von Kontinentaldrift
     bis Ocean Drive.
-  - **Sanduhr** mit echter Korn-Physik, **Wartetag** (die Wartezeit als 24-Stunden-Uhr) und
+  - **Neon-Sanduhr**: hochauflösendes Glas mit glühendem Sand, Körnerstrom, Spritzern, Glanzlichtern und Neigen
+    per Maus (antippen schüttelt sie), dazu der **Wartetag** (die Wartezeit als 24-Stunden-Uhr) und
     **Prozent-Marken** bis 99,9999 %.
 - **Bay 03 – Zeitspiegel:** welcher Moment in der Vergangenheit genauso weit entfernt ist wie der Release.
 - **Bay 04 – Zeittunnel (3D):** jeder verbleibende Tag als Ring aus 24 Stundensegmenten (Schlaf, Schule,
   Freizeit), Tore für Schulstart, Zeitumstellung und Preload, Release-Portal mit Partikelwirbel, Autopilot.
   Ringe antippen öffnet den Tag.
-- **Bay 05 – Telemetrie (9 Instrumente):** Countdown-Kalender, Zahlenmystik, Einheiten-Kaskade,
-  Stundenbudget, Wartezeit-Umrechner, 13 Jahre in Wochen, historische Maßstäbe, Sonnenaufgänge, Zahlensysteme.
+- **Bay 05 – Telemetrie (7 Instrumente):** Countdown-Kalender, Zahlenmystik, Einheiten-Kaskade, Zahlensysteme,
+  Wartezeit-Umrechner, historische Maßstäbe, 13 Jahre in Wochen.
 - **Bay 06 – Persönlich:** Wochenenden, Schultage, Körper-Zähler, Annahmen-Regler, Leben im Vergleich, Freizeit-Bilanz.
 - **Bay 07 – Timeline:** interaktive Zeitachse, Countdown-Wand mit eigenen Countdowns, Meilenstein-Tracker,
   Abstände zwischen den GTA-Hauptteilen.
-- **Bay 08 – HQ:** Daily Check-in & Serien, Respekt-Level, 40 Achievements, Besuchs-Log, Fahndungsstufe.
+- **Bay 08 – HQ:** Daily Check-in & Serien, Respekt-Level, 39 Achievements, Besuchs-Log, Fahndungsstufe.
 - **Bay 09 – Zeitmaschine:** Vorschau der Eskalationsstufen, der letzten 24 Stunden, des Vollbild-Countdowns
   und der Release-Feier.
 
@@ -79,8 +79,8 @@ die Release-Feier. Danach wechselt alles in den Post-Release-Modus.
 Der Konami-Code und eine Sonne, die angeklickt werden möchte. Und ein paar Achievements, die erst
 auftauchen, wenn man sie findet.
 
-Neue Meldungen für die Intel-Zentrale kommen oben in **`src/data/news.ts`** dazu (Art, Zeitpunkt, Text,
-Quellen; Leaks mit `spoiler: true`), dann `NEWS_UPDATED` anpassen. Die Briefing-Texte stehen in **`src/data/briefings.ts`** (je Tag bis zum Release), die Startpunkt-Vorgaben
+Neue Meldungen für die Intel-Zentrale kommen oben in **`src/data/news.ts`** dazu (Art, Zeitpunkt, kurzer Text,
+Quellen; Leaks mit Story-Inhalt mit `spoiler: true`), dann `NEWS_UPDATED` anpassen. Die Briefing-Texte stehen in **`src/data/briefings.ts`** (je Tag bis zum Release), die Startpunkt-Vorgaben
 in **`src/core/startpoint.ts`**.
 
 ## Zeitberechnung

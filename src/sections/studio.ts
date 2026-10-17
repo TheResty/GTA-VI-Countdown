@@ -145,7 +145,7 @@ export function studioSection(): HTMLElement {
     h('div.sp__zl', h('h3.sp__h', h('span', 'Zeitlupe'), h('small', 'Zoom von der gesamten Wartezeit bis in die Millisekunde')), zl.el),
     h(
       'div.sp__cards',
-      h('section.sp__card.tone-sun', h('h3.sp__h', h('span', 'Sanduhr'), h('small', 'Ein Korn für jeden Bruchteil deiner Wartezeit')), glass.el, h('p.sp__cap', sandPct, ' durchgelaufen · ', sandGrain)),
+      h('section.sp__card.tone-sun', h('h3.sp__h', h('span', 'Sanduhr'), h('small', 'Oben liegt, was noch vor dir liegt · antippen zum Schütteln')), glass.el, h('p.sp__cap', sandPct, ' durchgelaufen · ', sandGrain)),
       h(
         'section.sp__card.tone-orange',
         h('h3.sp__h', h('span', 'Der Wartetag'), h('small', 'Deine Wartezeit, gestaucht auf 24 Stunden')),
@@ -263,7 +263,6 @@ export function studioSection(): HTMLElement {
     ctx.fill();
   }
 
-  let sandTick = 0;
   registerModule({
     el: feature,
     frame(now) {
@@ -279,10 +278,7 @@ export function studioSection(): HTMLElement {
       setText(left, `${num(l.days)} T · ${pad(l.hours)}:${pad(l.minutes)}:${pad(l.seconds)}`);
       zl.frame(now);
       glass.setFraction(1 - f);
-      if (!document.documentElement.classList.contains('reduce-motion')) {
-        glass.step();
-        if (++sandTick % 2 === 0) glass.step();
-      }
+      if (!document.documentElement.classList.contains('reduce-motion')) glass.step();
       glass.draw();
       setText(sandPct, `${num(f * 100, 3, 3)} %`);
       // Wartetag
