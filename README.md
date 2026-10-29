@@ -50,7 +50,8 @@ Countdown-Wand an. Alles wird nur im Browser gespeichert (localStorage).
     Riesenziffern für Jahr, Monat, Tag, Stunde, Minute, Sekunde; „Jetzt folgen“ lässt die Achse live
     mitlaufen, der „Sturzflug ins Jetzt“ zoomt automatisch bis in die Millisekunden. Die Anzeige
     „Zeitfluss“ verrät, wie schnell die Zeit gerade über den Bildschirm wandert – von Kontinentaldrift
-    bis Ocean Drive.
+    bis Ocean Drive. Darunter steht, wie breit die gesamte Wartezeit im aktuellen Maßstab wäre – von
+    ein paar Zentimetern bis zur doppelten Strecke Erde–Mond.
   - **Neon-Sanduhr**: hochauflösendes Glas mit glühendem Sand, Körnerstrom, Spritzern, Glanzlichtern und Neigen
     per Maus (antippen schüttelt sie), dazu der **Wartetag** (die Wartezeit als 24-Stunden-Uhr) und
     **Prozent-Marken** bis 99,9999 %.

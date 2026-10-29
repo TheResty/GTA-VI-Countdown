@@ -105,6 +105,8 @@ export function createZeitlupe(): Zeitlupe {
   const crumbEl = h('span.zl__crumb');
   const scaleEl = h('span.zl__scale');
   const speedEl = h('span.zl__speed');
+  const totalVal = h('b');
+  const totalCmp = h('span');
   const flash = h('div.zl__flash', { 'aria-hidden': 'true' });
   const followBtn = h<HTMLButtonElement>('button.chip-btn.zl__follow', { type: 'button', 'aria-pressed': 'true' }, icon('radar', 16), 'Jetzt folgen');
   const diveBtn = h<HTMLButtonElement>('button.btn.btn--pink.zl__dive', { type: 'button' }, icon('rocket', 18), 'Sturzflug ins Jetzt');
@@ -128,6 +130,7 @@ export function createZeitlupe(): Zeitlupe {
     h('div.zl__bar', presetBar, h('div.zl__actions', followBtn, diveBtn)),
     h('div.zl__stage', canvas, flash),
     h('div.zl__hud', h('div.zl__hud-l', levelEl, crumbEl), h('div.zl__hud-r', speedEl, scaleEl)),
+    h('p.zl__total', { title: 'Breite des Ausschnitts geteilt durch seinen Anteil an der gesamten Wartezeit (96 px ≈ 2,54 cm)' }, icon('target', 14), 'Gesamte Wartezeit in diesem Maßstab: ', totalVal, totalCmp),
     mini,
     h('p.zl__hint', 'Mausrad oder zwei Finger: zoomen · ziehen: verschieben · Doppelklick: hineinzoomen · Tasten + / − / ← / →'),
   );
@@ -711,6 +714,11 @@ export function createZeitlupe(): Zeitlupe {
       ms >= DAY_MS ? `${num(ms / DAY_MS, ms < 10 * DAY_MS ? 1 : 0)} Tage` : ms >= HOUR_MS ? `${num(ms / HOUR_MS, 1)} Std.` : ms >= MINUTE_MS ? `${num(ms / MINUTE_MS, 1)} Min.` : ms >= 1000 ? `${num(ms / 1000, 1)} Sek.` : `${num(ms, ms < 10 ? 2 : 0)} ms`;
     setText(scaleEl, `Ausschnitt ${fmtSpan(viewSpan)} · 1 px ≈ ${fmtSpan(perPx)} · Zoom ×${num(fullSpan() / viewSpan, 0)}`);
     setText(speedEl, `Zeitfluss ${flowSpeed((W / viewSpan) * 1000)}`);
+    // Breite des Ausschnitts ÷ Anteil am Gesamtzeitraum = Breite der ganzen Wartezeit
+    const totalPx = W * ((RELEASE - start) / viewSpan);
+    const [val, cmp] = physicalWidth(totalPx);
+    setText(totalVal, `${val} breit`);
+    setText(totalCmp, cmp ? ` · ${cmp}` : '');
     if (viewSpan < 1000) unlock('zoom_ms');
   }
 
@@ -773,6 +781,25 @@ export function createZeitlupe(): Zeitlupe {
       }
     },
   };
+}
+
+/** Bildschirmbreite in Pixeln als echte Länge (96 CSS-px ≈ 2,54 cm) plus Vergleich */
+function physicalWidth(px: number): [string, string] {
+  const m = (px / 96) * 0.0254;
+  const value = m < 1 ? `${num(m * 100, 1)} cm` : m < 1000 ? `${num(m, m < 10 ? 2 : 0)} m` : `${num(m / 1000, m < 10_000 ? 2 : m < 1e6 ? 1 : 0)} km`;
+  const refs: [number, string][] = [
+    [149_597_870_700, 'Erde–Sonne-Distanz'],
+    [384_400_000, 'Erde–Mond-Distanz'],
+    [40_075_000, 'Erdumfang'],
+    [12_742_000, 'Erddurchmesser'],
+    [876_000, 'Deutschland von Nord nach Süd'],
+    [42_195, 'Marathon'],
+    [828, 'Burj Khalifa'],
+    [105, 'Fußballfeld'],
+    [1.8, 'Mensch'],
+  ];
+  const ref = refs.find(([len]) => m >= len);
+  return [value, ref ? `≈ ${num(m / ref[0], m / ref[0] < 10 ? 1 : 0)} × ${ref[1]}` : ''];
 }
 
 /** Wie schnell die Zeitachse im Jetzt-Modus über den Bildschirm wandert (96 CSS-px ≈ 2,54 cm). */

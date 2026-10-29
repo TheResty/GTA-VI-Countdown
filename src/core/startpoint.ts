@@ -37,6 +37,7 @@ export function startPresets(): StartPoint[] {
     { id: 'delay2', label: 'Zweite Verschiebung', short: 'Verschiebung', at: ANCHORS.delay2, group: 'gta' },
     { id: 'year2026', label: 'Jahresbeginn 2026', short: '2026', at: ANCHORS.year2026, group: 'gta' },
     { id: 'preorders', label: 'Vorbestellungsstart', short: 'Vorbestellung', at: ANCHORS.preorders, group: 'gta' },
+    { id: 'extendedlook', label: 'An Extended Look', short: 'Extended Look', at: ANCHORS.extendedLook, group: 'gta' },
     { id: 'launchtrailer', label: 'Launch-Trailer', short: 'Launch-Trailer', at: ANCHORS.launchTrailer, group: 'gta' },
   ];
   const autumn = HOLIDAYS[0];

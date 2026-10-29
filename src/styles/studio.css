@@ -656,6 +656,28 @@
   color: var(--ink-2);
 }
 
+.zl__total {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(var(--cyan-rgb), 0.3);
+  background: rgba(var(--cyan-rgb), 0.06);
+  font-size: 13.5px;
+  color: var(--ink-2);
+}
+
+.zl__total .icon {
+  color: var(--cyan);
+}
+
+.zl__total b {
+  font: 700 14px var(--font-mono);
+  color: var(--cyan);
+}
+
 .zl__flash {
   position: absolute;
   inset: 0;

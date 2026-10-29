@@ -33,9 +33,31 @@ export interface NewsItem {
 }
 
 /** Stand der kuratierten Liste */
-export const NEWS_UPDATED = '2026-10-17T17:30';
+export const NEWS_UPDATED = '2026-10-29T12:00';
 
 export const NEWS: NewsItem[] = [
+  {
+    id: 'file-size',
+    at: '2026-10-27',
+    kind: 'report',
+    title: 'Rund 210 GB Download auf der PS5',
+    text: 'Laut Daten aus dem PlayStation Store braucht die Standard-Edition etwa 210 GB, ein Day-One-Patch käme womöglich noch dazu. Rockstar hat die Größe nicht bestätigt – Speicher vor dem Preload am 12. November trotzdem schon mal freiräumen.',
+    sources: [
+      { label: 'Kotaku', url: 'https://kotaku.com/gta-6s-expectedly-massive-file-size-has-been-revealed-2000750298' },
+      { label: 'Complex', url: 'https://www.complex.com/pop-culture/a/treyalston/gta-6-file-size-210gb-preload' },
+    ],
+  },
+  {
+    id: 'review-codes',
+    at: '2026-10-26',
+    kind: 'report',
+    title: 'Testmuster verschickt – Tests am 18. November?',
+    text: 'Laut Insider NateTheHate hat Rockstar die Review-Codes an die Presse verschickt, das Embargo soll am 18. November fallen – einen Tag vor dem Release, wie bei GTA V und Red Dead 2. Offiziell bestätigt ist das nicht.',
+    sources: [
+      { label: 'altchar', url: 'https://www.altchar.com/game-news/gta-6-reviews-reportedly-set-for-november-18-as-review-copies-reach-media-ateti7l7KLK3' },
+      { label: 'Notebookcheck', url: 'https://www.notebookcheck.net/GTA-6-review-codes-are-out-in-the-wild-giving-outlets-just-over-three-weeks.1434328.0.html' },
+    ],
+  },
   {
     id: 'launch-trailer',
     at: '2026-10-15T15:00',
@@ -91,6 +113,18 @@ export const NEWS: NewsItem[] = [
     title: 'CyberLeek stellt Take-Two ein Ultimatum',
     text: 'Echte Discs und eine Entschuldigung – sonst komme ein Build mit der kompletten Story, gekoppelt an den Kurs eines eigenen Memecoins. Nichts davon ist bestätigt; angebliche Build-Downloads wurden mit Schadsoftware in Verbindung gebracht.',
     sources: [{ label: 'VGC', url: 'https://www.videogameschronicle.com/news/group-threatens-to-leak-full-gta-6-build-if-physical-plans-arent-reversed/' }],
+  },
+  {
+    id: 'radio',
+    at: '2026-10-09',
+    approx: true,
+    kind: 'official',
+    title: 'Die ersten sechs Radiosender',
+    text: 'Rockstar stellt AfroBank FM, Back Country Radio, Dirty South Classics, Flash FM, The Chamber 106.6 und Cocoteo FM vor – mit Hörproben auf der offiziellen Website. Weitere Sender folgen im Spiel.',
+    sources: [
+      { label: 'KeenGamer', url: 'https://www.keengamer.com/articles/news/gta-6-reveals-its-first-six-radio-stations-hosted-by-bad-bunny-slayer-and-more/' },
+      { label: 'GosuGamers', url: 'https://www.gosugamers.net/entertainment/news/79321-you-can-now-preview-grand-theft-auto-vi-s-in-game-radio-stations-on-foot-listening-confirmed' },
+    ],
   },
   {
     id: 'cyberleek-25min',
@@ -149,6 +183,7 @@ export interface UpcomingItem {
 
 export const UPCOMING: UpcomingItem[] = [
   { id: 'preload', at: '2026-11-12T00:00', title: 'Preload-Start', note: 'Für Vorbesteller.' },
+  { id: 'reviews', at: '2026-11-18T12:01', title: 'Test-Embargo (Insider)', note: 'Laut Insidern fallen die Tests einen Tag vor dem Release – unbestätigt.' },
   { id: 'release', at: '2026-11-19T00:00', title: 'GTA VI erscheint', note: 'PS5 und Xbox Series X|S.' },
   { id: 'heat', at: '2026-11-19T01:00', title: 'Vice City Night der Miami Heat', note: 'Heat gegen Bucks auf dem „Vice City Court“ – eine Stunde nach dem Release.' },
 ];
