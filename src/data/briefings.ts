@@ -155,23 +155,23 @@ export const DAILY: Record<number, Briefing> = {
   },
   11: {
     title: 'Festplatten-Sonntag',
-    text: () => 'Perfekter Tag zum Aufräumen: In vier Tagen startet der Preload. Alte Spiele, die du seit Monaten nicht angefasst hast, dürfen jetzt gehen. Sie verstehen das.',
+    text: () => 'Perfekter Tag zum Aufräumen: Übermorgen startet der Preload, und der braucht bis zu 212 GB. Alte Spiele, die du seit Monaten nicht angefasst hast, dürfen jetzt gehen. Sie verstehen das.',
   },
   10: {
     title: 'Der letzte zweistellige Montag',
-    text: (c) => `Zehn Tage. Ab morgen passt die Restzeit in eine einzige Ziffer. Noch ${school(c)} – diese Woche hat fünf davon, die nächste nur drei.`,
+    text: (c) => `Zehn Tage. Und heute um Mitternacht startet der Preload – zwei Tage früher als ursprünglich angekündigt. Konsole im Standby lassen, Router motivieren. Noch ${school(c)}.`,
   },
   9: {
-    title: 'Einstellig',
-    text: () => 'Neun Tage. Zum ersten Mal reicht eine Ziffer. Neun ist eine gute Zahl. Acht wäre besser. Sieben wäre Preload.',
+    title: 'PRELOAD',
+    text: () => 'Seit 00:00 Uhr lädt die PS5 GTA VI vor, die Xbox seit 01:00 Uhr – bis zu 212 GB. Das Spiel kommt zu dir nach Hause, spielen lässt es sich erst in neun Tagen. Und zum ersten Mal reicht für die Restzeit eine einzige Ziffer.',
   },
   8: {
     title: 'Elfter Elfter',
-    text: () => 'Anderswo beginnt heute die Karnevalssaison. Hier beginnt die letzte Nacht vor dem Preload: Um Mitternacht darf deine Konsole loslegen. Router motivieren, Konsole im Standby lassen.',
+    text: () => 'Anderswo beginnt heute die Karnevalssaison. Hier läuft seit gestern der Preload – guter Moment, um nachzusehen, ob der Download wirklich bei 100 % ist.',
   },
   7: {
-    title: 'PRELOAD',
-    text: () => 'Seit 00:00 Uhr kann GTA VI vorgeladen werden. Das Spiel kommt zu dir nach Hause – nur abspielen lässt es sich noch eine Woche lang nicht. T-7. Ab jetzt ist es physisch da.',
+    title: 'T-7',
+    text: () => 'Eine Woche. Ab heute dürfen auch die Box-Codes vorladen – jetzt liegt GTA VI bei allen auf der Platte. Nur abspielen lässt es sich noch sieben Nächte lang nicht.',
   },
   6: {
     title: 'Freitag, der 13.',

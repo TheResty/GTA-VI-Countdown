@@ -19,8 +19,8 @@ describe('Zeitzonen & Sommerzeit', () => {
     expect(RELEASE).toBe(Date.UTC(2026, 10, 18, 23, 0));
   });
 
-  it('Preload ist exakt 7 Tage vor dem Release', () => {
-    expect(RELEASE - PRELOAD).toBe(7 * DAY_MS);
+  it('Preload ist exakt 9 Tage vor dem Release', () => {
+    expect(RELEASE - PRELOAD).toBe(9 * DAY_MS);
   });
 
   it('Sommerzeit (MESZ) wird korrekt umgerechnet', () => {
@@ -73,7 +73,7 @@ describe('Kalender', () => {
 
   it('erkennt Sondertage', () => {
     expect(dayType({ y: 2026, m: 11, d: 19 })).toBe('release');
-    expect(dayType({ y: 2026, m: 11, d: 12 })).toBe('preload');
+    expect(dayType({ y: 2026, m: 11, d: 10 })).toBe('preload');
     expect(dayType({ y: 2026, m: 10, d: 20 })).toBe('holiday');
     expect(dayType({ y: 2026, m: 10, d: 26 })).toBe('school');
     expect(dayType({ y: 2026, m: 10, d: 31 })).toBe('weekend');

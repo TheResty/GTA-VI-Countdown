@@ -21,7 +21,7 @@ Alles Zentrale steht in **`src/config.ts`**:
 
 | Bereich | Was |
 | --- | --- |
-| `release.date`, `preload` | Release (19.11.2026, 00:00) und Preload-Start (12.11.2026) |
+| `release.date`, `preload` | Release (19.11.2026, 00:00) und Preload-Start (10.11.2026, laut Rockstar) |
 | `user` | Rufname, Geburtsdatum, Einschulung, Standort für Sonnenaufgänge |
 | `school.holidays` | Ferien (Herbstferien bis 25.10.2026, danach Schule) |
 | `school.freeDays`, `lessonsPerDay`, `dayStart/dayEnd` | Schulfreie Tage und Unterrichtszeiten |

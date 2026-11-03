@@ -55,7 +55,7 @@ export const PHASES: Phase[] = [
     level: 3,
     label: 'T-7 · Preload',
     code: 'VICE-CON 2',
-    description: 'Eine Woche. Der Preload läuft, die Nerven auch.',
+    description: 'Eine Woche. Der Preload läuft schon seit zwei Tagen, die Nerven auch.',
     unlocks: 'Alarm-Scanlines, Preload-Anzeige, Puls-Effekte',
   },
   {

@@ -38,7 +38,7 @@ function build(): Milestone[] {
         d === 42
           ? 'Die Antwort auf alles: 42 Tage.'
           : d === 7
-            ? 'Eine Woche – zeitgleich mit dem Preload-Start.'
+            ? 'Eine Woche – und auch die Box-Codes dürfen jetzt vorladen.'
             : d === 1
               ? 'Die finalen 24 Stunden beginnen.'
               : `${num(d * 24)} Stunden bis Leonida.`,

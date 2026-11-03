@@ -33,15 +33,28 @@ export interface NewsItem {
 }
 
 /** Stand der kuratierten Liste */
-export const NEWS_UPDATED = '2026-10-29T12:00';
+export const NEWS_UPDATED = '2026-11-03T20:00';
 
 export const NEWS: NewsItem[] = [
+  {
+    id: 'preload-early',
+    at: '2026-11-03',
+    kind: 'official',
+    title: 'Preload schon ab 10. November – 212 GB',
+    text: 'Rockstar zieht den Preload zwei Tage vor: Auf der PS5 startet er am 10. November um 00:00 Uhr Ortszeit, auf der Xbox um 01:00 Uhr deutscher Zeit. Bis zu 212 GB, Box-Codes erst ab 12. November. Spielen geht weiterhin ab 19. November.',
+    facts: ['PS5: 10.11., 00:00', 'Xbox: 10.11., 01:00', 'bis zu 212 GB', 'Box-Codes: 12.11.'],
+    sources: [
+      { label: 'Rockstar Newswire', url: 'https://www.rockstargames.com/newswire/article/k4ak9okk485712/grand-theft-auto-vi-pre-load-begins-on-november-10' },
+      { label: 'GamesRadar', url: 'https://www.gamesradar.com/games/grand-theft-auto/rockstar-confirms-gta-6-is-212gb-pre-loading-opens-earlier-than-previously-announced-for-digital-orders/' },
+      { label: 'VGC', url: 'https://www.videogameschronicle.com/news/rockstar-details-grand-theft-auto-6-pre-load-date-and-time-and-file-size/' },
+    ],
+  },
   {
     id: 'file-size',
     at: '2026-10-27',
     kind: 'report',
     title: 'Rund 210 GB Download auf der PS5',
-    text: 'Laut Daten aus dem PlayStation Store braucht die Standard-Edition etwa 210 GB, ein Day-One-Patch käme womöglich noch dazu. Rockstar hat die Größe nicht bestätigt – Speicher vor dem Preload am 12. November trotzdem schon mal freiräumen.',
+    text: 'Laut Daten aus dem PlayStation Store braucht die Standard-Edition etwa 210 GB, ein Day-One-Patch käme womöglich noch dazu. Inzwischen hat Rockstar bis zu 212 GB bestätigt.',
     sources: [
       { label: 'Kotaku', url: 'https://kotaku.com/gta-6s-expectedly-massive-file-size-has-been-revealed-2000750298' },
       { label: 'Complex', url: 'https://www.complex.com/pop-culture/a/treyalston/gta-6-file-size-210gb-preload' },
@@ -168,7 +181,7 @@ export const NEWS: NewsItem[] = [
     at: '2026-06-25',
     kind: 'official',
     title: 'Vorbestellungen und die Box ohne Disc',
-    text: 'Standard-Edition 79,99 US-$, Ultimate 99,99 US-$. Die Box-Version enthält keine Disc, sondern einen Download-Code. Vorladen ab 12. November.',
+    text: 'Standard-Edition 79,99 US-$, Ultimate 99,99 US-$. Die Box-Version enthält keine Disc, sondern einen Download-Code. Vorladen war für den 12. November angekündigt.',
     sources: [{ label: 'VGC', url: 'https://www.videogameschronicle.com/news/rockstar-confirms-there-will-be-no-disc-version-of-gta6-at-launch/' }],
   },
 ];
@@ -182,7 +195,7 @@ export interface UpcomingItem {
 }
 
 export const UPCOMING: UpcomingItem[] = [
-  { id: 'preload', at: '2026-11-12T00:00', title: 'Preload-Start', note: 'Für Vorbesteller.' },
+  { id: 'preload', at: '2026-11-10T00:00', title: 'Preload-Start', note: 'PS5 digital – Xbox ab 01:00, Box-Codes ab 12.11.' },
   { id: 'reviews', at: '2026-11-18T12:01', title: 'Test-Embargo (Insider)', note: 'Laut Insidern fallen die Tests einen Tag vor dem Release – unbestätigt.' },
   { id: 'release', at: '2026-11-19T00:00', title: 'GTA VI erscheint', note: 'PS5 und Xbox Series X|S.' },
   { id: 'heat', at: '2026-11-19T01:00', title: 'Vice City Night der Miami Heat', note: 'Heat gegen Bucks auf dem „Vice City Court“ – eine Stunde nach dem Release.' },

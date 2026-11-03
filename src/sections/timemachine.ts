@@ -16,7 +16,7 @@ export function timeMachineSection(): HTMLElement {
   const presets: [string, () => number, number?][] = [
     ['T-30 Tage', () => RELEASE - 30 * DAY_MS + 8000],
     ['T-14 Tage', () => RELEASE - 14 * DAY_MS + 8000],
-    ['Preload (T-7)', () => PRELOAD + 5000],
+    ['Preload (T-9)', () => PRELOAD + 5000],
     ['T-3 Tage', () => RELEASE - 3 * DAY_MS + 8000],
     ['Letzte 24 Std.', () => RELEASE - DAY_MS + 8000],
     ['Letzte Stunde', () => RELEASE - HOUR_MS + 6000],

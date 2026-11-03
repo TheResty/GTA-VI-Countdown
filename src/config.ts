@@ -43,8 +43,9 @@ export const CONFIG = {
     platforms: 'PlayStation 5 · Xbox Series X|S',
   },
 
-  /** Preload-Start (laut Rockstar ab 12.11.2026) – Uhrzeit 00:00 ist eine Annahme */
-  preload: '2026-11-12T00:00',
+  /** Preload-Start laut Rockstar (Newswire 3.11.2026): PS5 digital um 00:00 Ortszeit am 10.11.,
+   *  Xbox ab 01:00 deutscher Zeit, Box-Codes erst ab 12.11. */
+  preload: '2026-11-10T00:00',
 
   user: {
     /** Wie dich das Command Center anspricht */
@@ -115,9 +116,9 @@ export const CONFIG = {
     {
       id: 'preload',
       title: 'Preload-Start',
-      date: '2026-11-12T00:00',
+      date: '2026-11-10T00:00',
       kind: 'gta',
-      description: 'GTA VI kann vorab auf die Konsole geladen werden. Spielen kannst du es noch nicht.',
+      description: 'GTA VI kann vorab auf die Konsole geladen werden (PS5 ab 00:00, Xbox ab 01:00, Box-Codes ab 12.11.). Spielen kannst du es noch nicht.',
       countdown: true,
     },
     {
