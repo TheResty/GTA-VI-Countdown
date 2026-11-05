@@ -1,0 +1,36 @@
+/* English edition – small additions on top of the shared styles */
+.sp__cards--two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 760px) {
+  .sp__cards--two {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.hero__tznote {
+  margin-top: 4px;
+  font: 500 12px/1.4 var(--font-mono);
+  color: var(--ink-3);
+  text-align: center;
+}
+
+.en-footer {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--ink-3);
+}
+
+.en-footer b {
+  color: var(--ink-2);
+}
+
+.intel__sum {
+  grid-template-columns: 62px minmax(0, 1fr) auto;
+}
+
+.intel__d b {
+  white-space: nowrap;
+}

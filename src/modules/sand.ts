@@ -107,11 +107,21 @@ interface Grain {
 
 const COLORS = ['255,226,140', '255,196,90', '255,150,70', '255,96,120', '255,70,160'];
 
-export function createSandGlass(): SandGlass {
+export interface SandOptions {
+  /** Beschriftung oben/unten, z. B. ['NOCH', 'GESCHAFFT'] */
+  labels?: [string, string];
+  /** Prozentformat */
+  pct?: (v: number) => string;
+  ariaLabel?: string;
+}
+
+export function createSandGlass(opts: SandOptions = {}): SandGlass {
+  const [labelLeft, labelDone] = opts.labels ?? ['NOCH', 'GESCHAFFT'];
+  const pct = opts.pct ?? ((v: number) => `${num(v, 3, 3)} %`);
   const canvas = document.createElement('canvas');
   canvas.className = 'sand';
   canvas.setAttribute('role', 'img');
-  canvas.setAttribute('aria-label', 'Sanduhr der Wartezeit');
+  canvas.setAttribute('aria-label', opts.ariaLabel ?? 'Sanduhr der Wartezeit');
 
   // Körnung als wiederholbares Muster
   const noise = document.createElement('canvas');
@@ -551,8 +561,8 @@ export function createSandGlass(): SandGlass {
     // Beschriftung (nur wenn Platz ist)
     const side = W / 2 - R * 1.3;
     if (side >= 70) {
-      label(ctx, cx + capW + 10, yN - bh * 0.55, 'left', 'NOCH', `${num(r * 100, 3, 3)} %`, '#ffd23f', cx + wN(0.55) * bh + 4);
-      label(ctx, cx - capW - 10, yN + bh * 0.55, 'right', 'GESCHAFFT', `${num((1 - r) * 100, 3, 3)} %`, '#ff5fa8', cx - wN(0.55) * bh - 4);
+      label(ctx, cx + capW + 10, yN - bh * 0.55, 'left', labelLeft, pct(r * 100), '#ffd23f', cx + wN(0.55) * bh + 4);
+      label(ctx, cx - capW - 10, yN + bh * 0.55, 'right', labelDone, pct((1 - r) * 100), '#ff5fa8', cx - wN(0.55) * bh - 4);
     }
   }
 
